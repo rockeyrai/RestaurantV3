@@ -2,7 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const { connectMongoDB } = require("./database/mongodb");
-const { connectMySql } = require("./database/mysql");
+const { connectMySql, mysqlPool } = require("./database/mysql");
+const userRouter = require("./router/user")
 require("dotenv").config();
 
 // Connect to databases
@@ -10,7 +11,6 @@ connectMongoDB();
 connectMySql();
 
 const app = express();
-
 app.use(express.json());
 
 app.use(
@@ -21,6 +21,19 @@ app.use(
   })
 );
 app.use(express.raw({ type: "application/json" }));
+
+const testQuery = async () => {
+  try {
+    const [rows] = await mysqlPool.query('SELECT 1');
+    console.log('Query success:', rows);
+  } catch (error) {
+    console.error('Query failed:', error.message || error);
+  }
+};
+testQuery();
+
+
+app.use(userRouter);
 
 // Set port with fallback if the environment variable is not set
 const PORT = process.env.MY_PORT || 6000;

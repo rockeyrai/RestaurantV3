@@ -1,35 +1,56 @@
-'use client'
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, toggleLoginModal, toggleAuthMode } from '../redux/slice/auth';
-import { Mail, Lock, UserPlus, LogIn, X } from 'lucide-react';
+import { signIn, signUp, toggleLoginModal, toggleAuthMode } from '../redux/slice/auth';
+import { Mail, Lock, UserPlus, LogIn, X, User } from 'lucide-react';
 
 export default function AuthModal() {
   const dispatch = useDispatch();
-  const isRegistering = useSelector((state) => state.auth.isRegistering);
+  const { isRegistering, loading, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
+    username: '',
   });
-  const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setValidationError('');
 
-    if (isRegistering && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    if (isRegistering) {
+      if (formData.password !== formData.confirmPassword) {
+        setValidationError('Passwords do not match');
+        return;
+      }
+      if (!formData.username) {
+        setValidationError('Username is required');
+        return;
+      }
+      if (formData.username.length < 3) {
+        setValidationError('Username must be at least 3 characters long');
+        return;
+      }
+      await dispatch(
+        signUp({
+          email: formData.email,
+          password: formData.password,
+          username: formData.username,
+        })
+      );
+    } else {
+      await dispatch(
+        signIn({
+          email: formData.email,
+          password: formData.password,
+        })
+      );
     }
-
-    // In a real app, you would make an API call here
-    // For now, we'll just simulate a successful login/registration
-    dispatch(login({ email: formData.email }));
   };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setValidationError('');
   };
 
   return (
@@ -41,24 +62,43 @@ export default function AuthModal() {
         >
           <X size={20} />
         </button>
-        
+
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-2">
             {isRegistering ? 'Create Account' : 'Welcome Back'}
           </h2>
           <p className="text-gray-600 mb-6">
-            {isRegistering
-              ? 'Sign up to get started'
-              : 'Sign in to access your account'}
+            {isRegistering ? 'Sign up to get started' : 'Sign in to access your account'}
           </p>
 
-          {error && (
+          {(error || validationError) && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-              {error}
+              {error || validationError}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegistering && (
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-2">
+                  Username
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    name="username"
+                    required
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Choose a username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    minLength={3}
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Email Address
@@ -117,9 +157,12 @@ export default function AuthModal() {
 
             <button
               type="submit"
-              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isRegistering ? (
+              {loading ? (
+                <span>Please wait...</span>
+              ) : isRegistering ? (
                 <>
                   <UserPlus size={20} />
                   Create Account
