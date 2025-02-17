@@ -3,34 +3,32 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 
+// Function to generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const payload = { userId };
+  const secret = process.env.JWT_SECRET;
+  return jwt.sign(payload, secret, { expiresIn: '1h' });
 };
 
-// API Routes
-// SignUp
 const userRegister = async (req, res) => {
   console.log('Request received:', req.body);
-  const { username, email, password, phone_number, role = 'customer' } = req.body;
+  const { username, email, password, role = 'customer' } = req.body;
 
   try {
     // Check if user already exists in MySQL
     const [results] = await mysqlPool.query('SELECT * FROM Users WHERE email = ?', [email]);
-    console.log('SELECT query results:', results);
 
     if (results.length > 0) {
-      console.log('User already exists');
       return res.status(400).json({ message: 'User already exists' });
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Password hashed successfully:', hashedPassword);
 
     // Insert user into MySQL
     const [insertResult] = await mysqlPool.query(
-      'INSERT INTO Users (username, email, password_hash, phone_number, role) VALUES (?, ?, ?, ?, ?)',
-      [username, email, hashedPassword, phone_number, role]
+      'INSERT INTO Users (username, email, password_hash, role) VALUES (?,?, ?, ?)',
+      [username, email, hashedPassword, role]
     );
 
     console.log('INSERT query result:', insertResult);
@@ -39,13 +37,13 @@ const userRegister = async (req, res) => {
     const token = generateToken(insertResult.insertId);
     console.log('Token generated:', token);
 
+    // Return success response with token
     return res.status(201).json({ message: 'User created', token });
   } catch (error) {
     console.error('Unexpected error:', error);
-    res.status(500).json({ message: 'Error during signup' });
+    return res.status(500).json({ message: 'Error during signup', error: error.message });
   }
 };
-
 
 // SignIn
 const userLogin = async (req, res) => {

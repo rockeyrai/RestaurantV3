@@ -16,37 +16,63 @@ export default function AuthModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setValidationError('');
-
+    setValidationError(''); // Clear any previous validation errors
+    console.log('Form Data:', formData);
+  
     if (isRegistering) {
+      // Check password match
       if (formData.password !== formData.confirmPassword) {
         setValidationError('Passwords do not match');
         return;
       }
+      // Check if username is provided
       if (!formData.username) {
         setValidationError('Username is required');
         return;
       }
+      // Check if username length is at least 3 characters
       if (formData.username.length < 3) {
         setValidationError('Username must be at least 3 characters long');
         return;
       }
-      await dispatch(
-        signUp({
-          email: formData.email,
-          password: formData.password,
-          username: formData.username,
-        })
-      );
+  
+      try {
+        // Dispatch the signUp action
+        await dispatch(
+          signUp({
+            email: formData.email,
+            password: formData.password,
+            username: formData.username,
+          })
+        );
+      } catch (error) {
+        // Catch any errors from the signUp action and display them
+        if (error.response && error.response.data) {
+          setValidationError(error.response.data.message || 'Error during signup');
+        } else {
+          setValidationError('Unexpected error during signup');
+        }
+      }
     } else {
-      await dispatch(
-        signIn({
-          email: formData.email,
-          password: formData.password,
-        })
-      );
+      // Dispatch the signIn action for login
+      try {
+        await dispatch(
+          signIn({
+            email: formData.email,
+            password: formData.password,
+          })
+        );
+      } catch (error) {
+        // Catch any errors from the signIn action and display them
+        if (error.response && error.response.data) {
+          setValidationError(error.response.data.message || 'Invalid email or password');
+        } else {
+          setValidationError('Unexpected error during login');
+        }
+      }
     }
   };
+  
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
