@@ -2,13 +2,21 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { FaPhone, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
-import { toggleLoginModal } from '../redux/slice/auth';
+import { toggleLoginModal,loadUserFromStorage } from '../redux/slice/auth';
 import LoginModal from '@/component/login';
+import { useEffect } from 'react';
+
 
 function App() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { isAuthenticated, showLoginModal } = useSelector((state) => state.auth);
+  const { showLoginModal } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    dispatch(loadUserFromStorage());
+  }, [dispatch]);  
 
   const handleNavigation = (path) => {
     if (!isAuthenticated) {
@@ -18,6 +26,7 @@ function App() {
     }
   };
 
+  console.log(user)
   return (
     <div className="min-h-screen bg-gray-50">
       {showLoginModal && <LoginModal />}
@@ -31,6 +40,9 @@ function App() {
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-50">
+            <div className='flex justify-end text-white'>
+            {isAuthenticated ? `Welcome, ${user?.user?.username}` : ""}
+            </div>
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="text-white">
                 <h1 className="text-5xl font-bold mb-4">La Belle Cuisine</h1>

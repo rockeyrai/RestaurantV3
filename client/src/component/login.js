@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signIn, signUp, toggleLoginModal, toggleAuthMode } from '../redux/slice/auth';
 import { Mail, Lock, UserPlus, LogIn, X, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AuthModal() {
   const dispatch = useDispatch();
@@ -13,6 +14,7 @@ export default function AuthModal() {
     username: '',
   });
   const [validationError, setValidationError] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +64,7 @@ export default function AuthModal() {
             password: formData.password,
           })
         );
+        router.push('/menu');// Redirect to menu page after successful signup
       } catch (error) {
         // Catch any errors from the signIn action and display them
         if (error.response && error.response.data) {

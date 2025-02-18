@@ -83,6 +83,13 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    loadUserFromStorage: (state) => {
+      if (typeof window !== 'undefined') {
+        const savedUser = JSON.parse(localStorage.getItem('user'));
+        state.isAuthenticated = !!savedUser;
+        state.user = savedUser || null;
+      }
+    },
     toggleLoginModal: (state) => {
       state.showLoginModal = !state.showLoginModal;
       state.isRegistering = false;
@@ -105,6 +112,7 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.showLoginModal = false;
         state.error = null;
+        localStorage.setItem('user', JSON.stringify(action.payload)); // Save user to local storage
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;
@@ -115,11 +123,15 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(signIn.fulfilled, (state, action) => {
-        state.loading = false;
+        const { user } = action.payload; // Extract user from API response
         state.isAuthenticated = true;
-        state.user = action.payload;
-        state.showLoginModal = false;
-        state.error = null;
+        state.user = {
+          userId: user.user_id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+        };
+        localStorage.setItem('user', JSON.stringify(state.user)); // Persist user to local storage
       })
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
@@ -128,6 +140,7 @@ const authSlice = createSlice({
       .addCase(signOut.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
+        localStorage.removeItem('user'); // Remove user from local storage
       })
       .addCase(signOut.rejected, (state, action) => {
         state.error = action.payload || 'Signout failed';
@@ -135,5 +148,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { toggleLoginModal, toggleAuthMode } = authSlice.actions;
+export const { toggleLoginModal, toggleAuthMode,loadUserFromStorage } = authSlice.actions;
 export default authSlice.reducer;
