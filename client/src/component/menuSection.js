@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Menu = ({ menuItems, toggleMenuItemAvailability }) => {
+const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
@@ -51,5 +51,6 @@ const Menu = ({ menuItems, toggleMenuItemAvailability }) => {
     </div>
   );
 };
+
 
 export default Menu;

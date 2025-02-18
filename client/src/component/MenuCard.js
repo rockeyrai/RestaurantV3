@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { Clock, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from "react";
+import { Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MenuCard = ({ item }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = item.image_urls.length > 0 ? item.image_urls : ['https://images.unsplash.com/photo-1546069901-ba9599a7e63c'];
+  const images =
+    item.image_urls.length > 0
+      ? item.image_urls
+      : ["https://images.unsplash.com/photo-1546069901-ba9599a7e63c"];
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -48,7 +51,9 @@ const MenuCard = ({ item }) => {
         )}
         {!item.availability && (
           <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-            <span className="text-white text-lg font-semibold">Currently Unavailable</span>
+            <span className="text-white text-lg font-semibold">
+              Currently Unavailable
+            </span>
           </div>
         )}
         {item.discount_percentage > 0 && (
@@ -63,11 +68,26 @@ const MenuCard = ({ item }) => {
           <div className="text-right">
             {item.discount_percentage > 0 ? (
               <>
-                <span className="text-lg font-bold text-green-600">${item.final_price.toFixed(2)}</span>
-                <span className="text-sm text-gray-500 line-through ml-2">${item.original_price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-green-600">
+                  {typeof item.final_price === "number" ||
+                  !isNaN(parseFloat(item.final_price))
+                    ? parseFloat(item.final_price).toFixed(2)
+                    : "N/A"}
+                </span>
+                <span className="text-sm text-gray-500 line-through ml-2">
+                  {typeof item.original_price === "number" ||
+                  !isNaN(parseFloat(item.original_price))
+                    ? parseFloat(item.original_price).toFixed(2)
+                    : "N/A"}
+                </span>
               </>
             ) : (
-              <span className="text-lg font-bold text-green-600">${item.final_price.toFixed(2)}</span>
+              <span className="text-lg font-bold text-green-600">
+                {typeof item.final_price === "number" ||
+                !isNaN(parseFloat(item.final_price))
+                  ? parseFloat(item.final_price).toFixed(2)
+                  : "N/A"}
+              </span>
             )}
           </div>
         </div>
@@ -75,7 +95,10 @@ const MenuCard = ({ item }) => {
         {item.tags && item.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {item.tags.map((tag, index) => (
-              <span key={index} className="inline-flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-600">
+              <span
+                key={index}
+                className="inline-flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-600"
+              >
                 <Tag className="w-3 h-3 mr-1" />
                 {tag}
               </span>
@@ -85,9 +108,10 @@ const MenuCard = ({ item }) => {
         <div className="flex items-center justify-between text-gray-500 text-sm">
           <span className="text-blue-600">{item.category_name}</span>
           {item.discount_percentage > 0 && (
-<div className="text-xs">
-  Offer valid: {formatDate(item.offer_start_date)} - {formatDate(item.offer_end_date)}
-</div>
+            <div className="text-xs">
+              Offer valid: {formatDate(item.offer_start_date)} -{" "}
+              {formatDate(item.offer_end_date)}
+            </div>
           )}
         </div>
       </div>

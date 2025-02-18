@@ -1,9 +1,9 @@
-"use client";
 const express = require("express");
 const cors = require("cors");
 const { connectMongoDB } = require("./database/mongodb");
 const { connectMySql, mysqlPool } = require("./database/mysql");
 const userRouter = require("./router/user")
+const menuRouter = require("./router/menu")
 require("dotenv").config();
 
 // Connect to databases
@@ -34,6 +34,7 @@ testQuery();
 
 
 app.use(userRouter);
+app.use(menuRouter)
 
 // Set port with fallback if the environment variable is not set
 const PORT = process.env.MY_PORT || 6000;

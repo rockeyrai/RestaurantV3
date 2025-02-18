@@ -4,8 +4,8 @@ import {
   LayoutDashboard, 
   Users, 
   UtensilsCrossed, 
-  Menu as MenuIcon,
-  UserCircle
+  Pizza,
+  UserCircle,
 } from 'lucide-react';
 import Dashboard from '@/component/dashboard';
 import Orders from '@/component/orderSection';
@@ -169,7 +169,7 @@ function Admin () {
             }`}
             onClick={() => setActiveTab('menu')}
           >
-            <MenuIcon className="w-5 h-5" />
+            <Pizza className="w-5 h-5" />
             <span>Menu</span>
           </div>
           <div
