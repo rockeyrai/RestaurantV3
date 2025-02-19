@@ -7,13 +7,21 @@ SELECT
     m.name,
     m.description,
     CAST(m.price AS DECIMAL(10, 2)) AS original_price,
-    ROUND(IFNULL(
-        CAST(m.price AS DECIMAL(10, 2)) * (1 - IFNULL(o.discount_percentage, 0) / 100),
-        CAST(m.price AS DECIMAL(10, 2))
-    ), 2) AS final_price,
+    ROUND(
+        CASE 
+            WHEN o.offer_type = 'percentage' THEN 
+                m.price * (1 - IFNULL(o.discount_percentage, 0) / 100) -- Apply percentage discount
+            WHEN o.offer_type = 'fixed_price' THEN 
+                GREATEST(0, m.price - IFNULL(o.discount_percentage, 0)) -- Deduct fixed price discount, ensure no negative value
+            ELSE 
+                m.price -- No discount
+        END,
+        2
+    ) AS final_price,
     IFNULL(CAST(o.discount_percentage AS DECIMAL(5, 2)), 0) AS discount_percentage,
     o.start_date AS offer_start_date,
     o.end_date AS offer_end_date,
+    o.offer_type AS offer_type, -- Added to GROUP BY
     c.name AS category_name,
     CAST(m.availability AS UNSIGNED) AS availability,
     
@@ -51,11 +59,11 @@ GROUP BY
     m.price, 
     dp.price, 
     o.discount_percentage, 
+    o.offer_type,   -- Added here
     o.start_date, 
     o.end_date, 
     c.name, 
     m.availability;
-
 `;
 
   try {
@@ -82,7 +90,105 @@ GROUP BY
       console.error("Error executing query:", err);
       res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}
+
+// Controller to handle adding a menu item
+ const addMenu = async (req, res) => {
+    const { name, description, price, category_name, availability, image_url, tags } = req.body;
+  
+    // Validate required fields
+    if (!name || !price || !category_name) {
+      return res.status(400).json({ message: 'Name, price, and category name are required' });
+    }
+  
+    const connection = await mysqlPool.getConnection();
+    await connection.beginTransaction();
+  
+    try {
+      // Check if the category exists, or insert it
+      const [categoryResult] = await connection.execute(
+        'SELECT category_id FROM Categories WHERE name = ?',
+        [category_name]
+      );
+  
+      let categoryId;
+      if (categoryResult.length > 0) {
+        categoryId = categoryResult[0].category_id; // Category exists, use its ID
+      } else {
+        // Insert new category if it does not exist
+        const [insertedCategory] = await connection.execute(
+          'INSERT INTO Categories (name) VALUES (?)',
+          [category_name]
+        );
+        categoryId = insertedCategory.insertId; // Get the new category ID
+      }
+  
+      // Insert the new menu item
+      const query = `
+        INSERT INTO Menu (name, description, price, category_id, availability)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      const [menuResult] = await connection.execute(query, [name, description, price, categoryId, availability || true]);
+  
+      // Get the menu_item_id of the newly inserted menu item
+      const menuItemId = menuResult.insertId;
+  
+      // If there are tags, insert them into the Menu_Tags table
+      if (tags && tags.length > 0) {
+        for (const tag of tags) {
+          // Check if the tag exists in the Tags table, or insert it if it doesn't
+          const [existingTag] = await connection.execute(
+            'SELECT tag_id FROM Tags WHERE name = ?',
+            [tag]
+          );
+  
+          let tagId;
+          if (existingTag.length > 0) {
+            tagId = existingTag[0].tag_id; // Tag exists, use existing ID
+          } else {
+            // Insert the new tag and get the tag_id
+            const [newTagResult] = await connection.execute(
+              'INSERT INTO Tags (name) VALUES (?)',
+              [tag]
+            );
+            tagId = newTagResult.insertId;
+          }
+  
+          // Now insert the menu_item_id and tag_id into the Menu_Tags table
+          await connection.execute(
+            'INSERT INTO Menu_Tags (menu_item_id, tag_id) VALUES (?, ?)',
+            [menuItemId, tagId]
+          );
+        }
+      }
+  
+      // If the image URL is provided, insert it into the Menu_Images table
+      if (image_url) {
+        await connection.execute(
+          'INSERT INTO Menu_Images (menu_item_id, image_url) VALUES (?, ?)',
+          [menuItemId, image_url]
+        );
+      }
+  
+      // Commit the transaction
+      await connection.commit();
+  
+      // Return a success response
+      return res.status(201).json({
+        message: 'Menu item with category, tags, and image added successfully',
+        menu_item_id: menuItemId, // Returning the new item ID
+        category_id: categoryId,  // Returning the category ID
+      });
+    } catch (err) {
+      // Rollback the transaction in case of an error
+      await connection.rollback();
+      console.error(err);
+      return res.status(500).json({ message: 'Server error', error: err.message });
+    } finally {
+      // Release the connection
+      connection.release();
+    }
+  };
 
 
-module.exports = { fetchMenu };
+module.exports = { fetchMenu,addMenu };

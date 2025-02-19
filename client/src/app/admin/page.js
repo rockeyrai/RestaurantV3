@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,16 +12,44 @@ import Orders from '@/component/orderSection';
 import Staff from '@/component/staffSection';
 import Tables from '@/component/tableSection';
 import Menu from '@/component/menuSection';
+import axios from 'axios';
 
 
 function Admin () {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [menuItems, setMenuItems] = useState([
-    { id: 1, name: 'Margherita Pizza', price: 12.99, category: 'Pizza', available: true },
-    { id: 2, name: 'Spaghetti Carbonara', price: 14.99, category: 'Pasta', available: true },
-    { id: 3, name: 'Caesar Salad', price: 8.99, category: 'Salads', available: true },
-    { id: 4, name: 'Tiramisu', price: 6.99, category: 'Desserts', available: false },
-  ]);
+  const [menuItems, setMenuItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+  const api = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const response = await api.get('/menu');
+        const formattedData = response.data.map(item => ({
+          id: item.menu_item_id,
+          name: item.name,
+          price: parseFloat(item.final_price),
+          category: item.category_name,
+          available: Boolean(item.availability),
+          discount: parseFloat(item.discount_percentage),
+        }));
+        setMenuItems(formattedData);
+      } catch (err) {
+        setError("Failed to fetch menu items. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchMenu();
+  }, []);
+  
 
   const [tables, setTables] = useState([
     { id: 1, table_number: 1, seats: 2, available: false, reservation: { customerName: 'John Doe', time: '19:00' } },
