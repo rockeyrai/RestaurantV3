@@ -41,7 +41,7 @@ function App() {
         >
           <div className="absolute inset-0 bg-black bg-opacity-50">
             <div className='flex justify-end text-white'>
-            {isAuthenticated ? `Welcome, ${user?.user?.username}` : ""}
+            {isAuthenticated ? `Welcome ${user?.username}` : ""}
             </div>
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="text-white">

@@ -3,23 +3,31 @@ const { mysqlPool } = require("../database/mysql");
 const fetchMenu = async (req, res) => {
   const query = `
 SELECT 
-    m.menu_item_id, 
-    m.name, 
-    m.description, 
-    CAST(m.price AS DECIMAL(10, 2)) AS original_price, 
-    -- Round the final price to 2 decimal places
+    m.menu_item_id,
+    m.name,
+    m.description,
+    CAST(m.price AS DECIMAL(10, 2)) AS original_price,
     ROUND(IFNULL(
         CAST(m.price AS DECIMAL(10, 2)) * (1 - IFNULL(o.discount_percentage, 0) / 100),
         CAST(m.price AS DECIMAL(10, 2))
-    ), 2) AS final_price, 
-    -- Use the discount percentage from the Offers table
+    ), 2) AS final_price,
     IFNULL(CAST(o.discount_percentage AS DECIMAL(5, 2)), 0) AS discount_percentage,
     o.start_date AS offer_start_date,
     o.end_date AS offer_end_date,
-    c.name AS category_name, 
-    CAST(m.availability AS UNSIGNED) AS availability,  -- Ensure availability is treated as a number
-    JSON_ARRAYAGG(t.name) AS tags,
-    JSON_ARRAYAGG(mi.image_url) AS image_urls
+    c.name AS category_name,
+    CAST(m.availability AS UNSIGNED) AS availability,
+    
+    -- Aggregate unique tag names while filtering out null values
+    (SELECT JSON_ARRAYAGG(t.name)
+     FROM Tags t
+     JOIN Menu_Tags mt ON mt.tag_id = t.tag_id
+     WHERE mt.menu_item_id = m.menu_item_id AND t.name IS NOT NULL) AS tags,
+    
+    -- Aggregate unique image URLs while filtering out null values
+    (SELECT JSON_ARRAYAGG(mi.image_url)
+     FROM Menu_Images mi
+     WHERE mi.menu_item_id = m.menu_item_id AND mi.image_url IS NOT NULL) AS image_urls
+
 FROM Menu m
 LEFT JOIN Dynamic_Pricing dp 
     ON m.menu_item_id = dp.menu_item_id
@@ -30,9 +38,9 @@ LEFT JOIN Offers o
     AND NOW() BETWEEN o.start_date AND o.end_date
 LEFT JOIN Categories c 
     ON m.category_id = c.category_id
-LEFT JOIN Menu_Tags mt 
+LEFT JOIN Menu_Tags mt
     ON m.menu_item_id = mt.menu_item_id
-LEFT JOIN Tags t 
+LEFT JOIN Tags t
     ON mt.tag_id = t.tag_id
 LEFT JOIN Menu_Images mi 
     ON m.menu_item_id = mi.menu_item_id
