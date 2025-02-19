@@ -24,7 +24,7 @@ const MenuCard = ({ item }) => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
-
+ console.log((item.original_price - item.discount_percentage).toFixed(2))
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div className="relative h-48">
@@ -56,11 +56,16 @@ const MenuCard = ({ item }) => {
             </span>
           </div>
         )}
-        {item.discount_percentage > 0 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md">
-            {item.discount_percentage}% OFF
-          </div>
-        )}
+{item.discount_percentage > 0 && (
+
+  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md">
+    {((item.original_price - item.discount_percentage).toFixed(2)) == item.final_price ? (
+      `Rs.${Number(item.discount_percentage)} OFF`
+    ) : (
+      `${Number(item.discount_percentage)}% OFF`
+    )}
+  </div>
+)}
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
@@ -71,13 +76,13 @@ const MenuCard = ({ item }) => {
                 <span className="text-lg font-bold text-green-600">
                   {typeof item.final_price === "number" ||
                   !isNaN(parseFloat(item.final_price))
-                    ? parseFloat(item.final_price).toFixed(2)
+                    ? `Rs${parseFloat(item.final_price).toFixed(2)}`
                     : "N/A"}
                 </span>
                 <span className="text-sm text-gray-500 line-through ml-2">
                   {typeof item.original_price === "number" ||
                   !isNaN(parseFloat(item.original_price))
-                    ? parseFloat(item.original_price).toFixed(2)
+                    ?  `Rs${parseFloat(item.original_price).toFixed(2)}`
                     : "N/A"}
                 </span>
               </>
@@ -85,7 +90,7 @@ const MenuCard = ({ item }) => {
               <span className="text-lg font-bold text-green-600">
                 {typeof item.final_price === "number" ||
                 !isNaN(parseFloat(item.final_price))
-                  ? parseFloat(item.final_price).toFixed(2)
+                  ? `Rs${parseFloat(item.final_price).toFixed(2)}`
                   : "N/A"}
               </span>
             )}
