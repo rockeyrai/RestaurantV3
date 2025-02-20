@@ -93,4 +93,30 @@ const saveTableReservation = async (req, res) => {
 };
 
 
-module.exports = { getTables, saveTableReservation };
+
+const fetchTableAdmin = async (req, res) => {
+  try {
+    const [rows] = await mysqlPool.query(`
+      SELECT 
+        t.id, 
+        t.table_number, 
+        t.seats, 
+        t.available, 
+        u.username AS customer_name,  -- Get the username from the Users table
+        t.reserve_time, 
+        t.reserve_date, 
+        t.no_of_people
+      FROM Tables t
+      LEFT JOIN Users u ON t.user_id = u.user_id;  -- Join Tables with Users based on user_id
+    `);
+    
+    console.log(rows); // This should now log the data correctly
+    res.json(rows); // Send the rows as JSON response
+  } catch (error) {
+    console.error('Error fetching tables:', error);
+    res.status(500).json({ error: 'Failed to fetch tables data' });
+  }
+};
+
+
+module.exports = { getTables, saveTableReservation, fetchTableAdmin };
