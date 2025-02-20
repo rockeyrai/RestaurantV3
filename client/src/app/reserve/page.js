@@ -47,29 +47,48 @@ function Reserve() {
     return today.toISOString().split('T')[0];
   }
 
-  const handleReservation = () => {
+  const handleReservation = async () => {
     if (!user) {
       alert('Please log in to make a reservation');
       return;
     }
-
+  
     if (!selectedTable) {
       alert('Please select a table');
       return;
     }
-
-    // Here you would typically make an API call to your backend
-    const reservation = {
-      userId: user.id,
-      tableId: selectedTable,
-      date,
-      time,
-      guests,
+  
+    const reservationData = {
+      table_id: selectedTable,
+      user_id: user.id,
+      order_id: null, // Assuming order_id is optional
+      reserve_time: time,
+      available: false, // Mark the table as unavailable after reservation
+      reserve_date: date,
+      no_of_people: guests,
     };
-
-    console.log('Reservation made:', reservation);
-    alert('Reservation successful!');
+  
+    try {
+      const response = await api.post('/tables', reservationData);
+  
+      if (response.status === 201 || response.status === 200) {
+        alert('Reservation successful!');
+        // Optionally, refresh the table data or update the state
+        setTables((prevTables) =>
+          prevTables.map((table) =>
+            table.id === selectedTable ? { ...table, available: false } : table
+          )
+        );
+        setSelectedTable(null); // Reset selected table
+      } else {
+        alert('Failed to make a reservation. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error making reservation:', error);
+      alert('An error occurred while making the reservation.');
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
