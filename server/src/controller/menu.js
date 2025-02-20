@@ -191,4 +191,35 @@ GROUP BY
   };
 
 
-module.exports = { fetchMenu,addMenu };
+const fetchCategorues = async (req, res) => {
+    try {
+      const query = "SELECT category_id, name FROM Categories";
+      const [rows] = await mysqlPool.query(query); // Adjust based on your database library
+      const categories = rows.map(row => ({
+        category_id: row.category_id,
+        name: row.name,
+      }));
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+
+// Get tags API
+const fetchTags = async (req, res) => {
+  try {
+    const query = "SELECT tag_id, name FROM Tags";
+    const [rows] = await mysqlPool.query(query); // Adjust based on your database library
+    const tags = rows.map(row => ({
+      tag_id: row.tag_id,
+      name: row.name,
+    }));
+    res.json(tags);
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { fetchMenu, addMenu, fetchCategorues, fetchTags };

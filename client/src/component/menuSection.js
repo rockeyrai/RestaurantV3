@@ -1,18 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [tags, setTags] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
-    category_name: "", // Changed to category_name instead of category_id
+    categories: [], // Changed to array for multiple categories
     availability: true,
-    tags: "",
+    tags: [],
     image_urls: "",
   });
-  const [loading, setLoading] = useState(false);
+
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
@@ -26,6 +31,26 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
       'Content-Type': 'application/json',
     },
   });
+
+  useEffect(() => {
+    const fetchTagsCategories = async () => {
+      try {
+        const [tagsResponse, categoriesResponse] = await Promise.all([
+          api.get('/tags'),
+          api.get("/categories")
+        ]);
+        setTags(tagsResponse.data);
+        setCategories(categoriesResponse.data);
+      } catch (err) {
+        setError("Failed to fetch data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTagsCategories();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -34,8 +59,7 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
     try {
       const payload = {
         ...formData,
-        tags: formData.tags.split(",").map((tag) => tag.trim()), // Convert tags to array
-        image_urls: formData.image_urls.split(",").map((url) => url.trim()), // Convert image URLs to array
+        image_urls: formData.image_urls.split(",").map((url) => url.trim()),
       };
 
       const response = await api.post('/menu', payload);
@@ -45,9 +69,9 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
         name: "",
         description: "",
         price: "",
-        category_name: "", // Reset category_name field
+        categories: [],
         availability: true,
-        tags: "",
+        tags: [],
         image_urls: "",
       });
     } catch (err) {
@@ -57,6 +81,9 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
       setLoading(false);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -89,7 +116,7 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
               value={formData.description}
               onChange={handleChange}
               className="border rounded p-2 w-full"
-            ></textarea>
+            />
             <input
               type="number"
               name="price"
@@ -99,15 +126,61 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
               required
               className="border rounded p-2 w-full"
             />
-            <input
-              type="text"
-              name="category_name" // Changed to category_name
-              placeholder="Category Name"
-              value={formData.category_name}
-              onChange={handleChange}
-              required
-              className="border rounded p-2 w-full"
-            />
+
+            {/* Categories Multi-select */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Categories
+              </label>
+              <select
+                multiple
+                value={formData.categories}
+                onChange={(e) => {
+                  const selectedCategories = Array.from(e.target.selectedOptions).map(
+                    (option) => option.value
+                  );
+                  setFormData({ ...formData, categories: selectedCategories });
+                }}
+                className="block w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-gray-500">
+                Selected categories: {formData.categories.join(", ")}
+              </p>
+            </div>
+
+            {/* Tags Multi-select */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Tags
+              </label>
+              <select
+                multiple
+                value={formData.tags}
+                onChange={(e) => {
+                  const selectedTags = Array.from(e.target.selectedOptions).map(
+                    (option) => option.value
+                  );
+                  setFormData({ ...formData, tags: selectedTags });
+                }}
+                className="block w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {tags.map((tag) => (
+                  <option key={tag.tag_id} value={tag.name}>
+                    {tag.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-gray-500">
+                Selected tags: {formData.tags.join(", ")}
+              </p>
+            </div>
+
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -116,17 +189,11 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, availability: e.target.checked })
                 }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label className="ml-2">Available</label>
+              <label className="ml-2 text-sm text-gray-700">Available</label>
             </div>
-            <input
-              type="text"
-              name="tags"
-              placeholder="Tags (comma-separated)"
-              value={formData.tags}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-            />
+
             <input
               type="text"
               name="image_urls"
@@ -135,10 +202,11 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
               onChange={handleChange}
               className="border rounded p-2 w-full"
             />
+
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
             >
               {loading ? "Adding..." : "Add Menu Item"}
             </button>
@@ -196,4 +264,3 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
 };
 
 export default Menu;
-

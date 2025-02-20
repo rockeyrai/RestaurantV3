@@ -1,18 +1,37 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users } from 'lucide-react';
+import { api } from '@/component/clientProvider';
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
   const [time, setTime] = useState('12:00');
   const [guests, setGuests] = useState(2);
-  const [tables, setTables] = useState([
-    { id: 1, table_number: 1, seats: 2, available: true },
-    { id: 2, table_number: 2, seats: 4, available: true },
-    { id: 3, table_number: 3, seats: 6, available: true },
-    { id: 4, table_number: 4, seats: 2, available: false },
-    { id: 5, table_number: 5, seats: 4, available: true },
-  ]);
+  const [tables, setTables] = useState([]);
+
+  // Fetch table data from the API
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const response = await api.get('/tables'); // Replace with your API endpoint
+        const data = await response.data;
+
+        // Transform the data: Convert available (1/0) to true/false
+        const formattedData = data.map((table) => ({
+          id: table.id,
+          table_number: table.table_number,
+          seats: table.seats,
+          available: table.available === 1, // Convert to boolean
+        }));
+
+        setTables(formattedData);
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
+    };
+
+    fetchTables();
+  }, []);
   const [selectedTable, setSelectedTable] = useState(null);
   const [user, setUser] = useState(null);
 

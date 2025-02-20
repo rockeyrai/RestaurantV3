@@ -12,6 +12,7 @@ function Menu() {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categories, setCategories] = useState([])
 
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
@@ -21,10 +22,12 @@ function Menu() {
   });
 
   useEffect(() => {
-    const fetchMenu = async () => {
+    const fetchMenuData = async () => {
       try {
         const response = await api.get('/menu');
+        const response1 = await api.get("/categories");
         setMenuItems(response.data);
+        setCategories(response1.data)
       } catch (err) {
         setError("Failed to fetch menu items. Please try again later.");
       } finally {
@@ -32,8 +35,13 @@ function Menu() {
       }
     };
 
-    fetchMenu();
+    fetchMenuData();
   }, []);
+
+    // const categories = [
+  //   { category_id: 1, name: "Pizza" },
+  //   { category_id: 2, name: "Main Course" },
+  // ];
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
@@ -51,11 +59,6 @@ function Menu() {
   
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
-
-  const categories = [
-    { category_id: 1, name: "Pizza" },
-    { category_id: 2, name: "Main Course" },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
