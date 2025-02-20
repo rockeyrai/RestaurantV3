@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users } from 'lucide-react';
 import { api } from '@/component/clientProvider';
+import { useSelector } from 'react-redux';
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
@@ -33,14 +34,7 @@ function Reserve() {
     fetchTables();
   }, []);
   const [selectedTable, setSelectedTable] = useState(null);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
+  const user = useSelector((state) => state.auth.user);
 
   function getTodayDate() {
     const today = new Date();
@@ -60,7 +54,7 @@ function Reserve() {
   
     const reservationData = {
       table_id: selectedTable,
-      user_id: user.id,
+      user_id: user.userId,
       order_id: null, // Assuming order_id is optional
       reserve_time: time,
       available: false, // Mark the table as unavailable after reservation

@@ -76,12 +76,12 @@ const saveTableReservation = async (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?)
       `;
       const [result] = await mysqlPool.query(query, [
-        user_id,
-        order_id,
-        reserve_time,
+        user_id || null, // Pass NULL if user_id is empty
+        order_id || null, // Pass NULL if order_id is empty
+        reserve_time || null, // Ensure valid time string or NULL
         available,
-        reserve_date,
-        no_of_people,
+        reserve_date || null, // Ensure valid date string or NULL
+        no_of_people || null, // Ensure valid integer or NULL
       ]);
 
       res.status(201).json({ message: 'Table reservation added successfully.', id: result.insertId });
