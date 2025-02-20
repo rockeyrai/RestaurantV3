@@ -19,6 +19,7 @@ function Admin () {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [tables, setTables] = useState([]);
 
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
@@ -51,12 +52,30 @@ function Admin () {
   }, []);
   
 
-  const [tables, setTables] = useState([
-    { id: 1, table_number: 1, seats: 2, available: false, reservation: { customerName: 'John Doe', time: '19:00' } },
-    { id: 2, table_number: 2, seats: 4, available: true },
-    { id: 3, table_number: 3, seats: 6, available: true },
-    { id: 4, table_number: 4, seats: 2, available: false, reservation: { customerName: 'Jane Smith', time: '20:00' } },
-  ]);
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const response = await api.get('/admin/tables');
+        console.log(response.data)
+        const data = response.data.map((table) => ({
+          id: table.id,
+          table_number: table.table_number,
+          seats: table.seats,
+          available: table.available,
+          reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
+          reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
+          no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
+        }));
+        setTables(data);
+        console.log(data); // Log the formatted data
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
+    };
+
+    fetchTables();
+  }, []);
+    
 
   const [orders, setOrders] = useState([
     {
@@ -100,7 +119,6 @@ function Admin () {
       phone_number: '555-0101',
       role: 'chef',
       schedule: [
-        { id: 1, staff_id: 1, shift_start: '2024-03-15 09:00', shift_end: '2024-03-15 17:00' },
         { id: 2, staff_id: 1, shift_start: '2024-03-16 09:00', shift_end: '2024-03-16 17:00' }
       ]
     },

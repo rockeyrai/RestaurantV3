@@ -112,7 +112,6 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.showLoginModal = false;
         state.error = null;
-        localStorage.setItem('user', JSON.stringify(action.payload)); // Save user to local storage
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;
@@ -131,7 +130,6 @@ const authSlice = createSlice({
           email: user.email,
           role: user.role,
         };
-        localStorage.setItem('user', JSON.stringify(state.user)); // Persist user to local storage
       })
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
@@ -140,7 +138,6 @@ const authSlice = createSlice({
       .addCase(signOut.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
-        localStorage.removeItem('user'); // Remove user from local storage
       })
       .addCase(signOut.rejected, (state, action) => {
         state.error = action.payload || 'Signout failed';

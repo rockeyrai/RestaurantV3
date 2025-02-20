@@ -15,9 +15,11 @@ const Tables = ({ tables, toggleTableAvailability }) => {
             </div>
             {table.reservation && (
               <div className="text-sm text-gray-600">
-                Reserved by: {table.reservation.customerName}<br />
-                Time: {table.reservation.time}
-              </div>
+  <span className="font-bold">Reserved by: </span>{table.reservation.customerName}<br />
+  <span className="font-bold">Time: </span>{table.reservation.time}<br />
+  <span className="font-bold">Group of: </span>{table.no_of_people}
+</div>
+
             )}
             <button
               onClick={() => toggleTableAvailability(table.id)}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Select from 'react-select';
 
 const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -25,6 +26,20 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleTagsChange = (selectedTags) => {
+    setFormData({
+      ...formData,
+      tags: selectedTags || [], // Set selected tags (array of objects)
+    });
+  };
+
+  const handleCategoriesChange = (selectCategories) => {
+    setFormData({
+      ...formData,
+      categories: selectCategories || [], // Set selected tags (array of objects)
+    });
+  };
+
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
     headers: {
@@ -39,8 +54,18 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
           api.get('/tags'),
           api.get("/categories")
         ]);
-        setTags(tagsResponse.data);
-        setCategories(categoriesResponse.data);
+        const tagsOptions = tagsResponse.data.map((tag) => ({
+          value: tag.tag_id,
+          label: tag.name,
+        }));
+
+        const categorieOptions = categoriesResponse.data.map((categorie) => ({
+          value: categorie.category_id,
+          label: categorie.name,
+        }));
+
+        setTags(tagsOptions);
+        setCategories(categorieOptions);
       } catch (err) {
         setError("Failed to fetch data. Please try again later.");
       } finally {
@@ -59,9 +84,12 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
     try {
       const payload = {
         ...formData,
+        tags: formData.tags.map((tag) => tag.label), // Send tag IDs to the API
+        categories: formData.categories.map((categorie) => categorie.label), // Send tag IDs to the API
         image_urls: formData.image_urls.split(",").map((url) => url.trim()),
       };
 
+      console.log(payload)
       const response = await api.post('/menu', payload);
 
       setMessage(response.data.message);
@@ -128,58 +156,33 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
             />
 
             {/* Categories Multi-select */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Categories
-              </label>
-              <select
-                multiple
-                value={formData.categories}
-                onChange={(e) => {
-                  const selectedCategories = Array.from(e.target.selectedOptions).map(
-                    (option) => option.value
-                  );
-                  setFormData({ ...formData, categories: selectedCategories });
-                }}
-                className="block w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-sm text-gray-500">
-                Selected categories: {formData.categories.join(", ")}
-              </p>
-            </div>
+            <div>
+          <label className="block text-sm font-medium text-gray-700">Categories</label>
+          <Select
+            isMulti
+            options={categories} // Options fetched from the API
+            value={formData.categories} // Selected tags
+            onChange={handleCategoriesChange} // Handle tag selection
+            placeholder="Select cateories..."
+            className="react-select-container"
+            classNamePrefix="react-select"
+          />
+        </div>
 
             {/* Tags Multi-select */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Tags
-              </label>
-              <select
-                multiple
-                value={formData.tags}
-                onChange={(e) => {
-                  const selectedTags = Array.from(e.target.selectedOptions).map(
-                    (option) => option.value
-                  );
-                  setFormData({ ...formData, tags: selectedTags });
-                }}
-                className="block w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {tags.map((tag) => (
-                  <option key={tag.tag_id} value={tag.name}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-sm text-gray-500">
-                Selected tags: {formData.tags.join(", ")}
-              </p>
-            </div>
+            <div>
+          <label className="block text-sm font-medium text-gray-700">Tags</label>
+          <Select
+            isMulti
+            options={tags} // Options fetched from the API
+            value={formData.tags} // Selected tags
+            onChange={handleTagsChange} // Handle tag selection
+            placeholder="Select tags..."
+            className="react-select-container"
+            classNamePrefix="react-select"
+          />
+        </div>
+
 
             <div className="flex items-center">
               <input

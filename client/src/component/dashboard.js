@@ -51,7 +51,7 @@ const Dashboard = ({
             <div key={index} className="flex flex-col items-center w-full">
               <div 
                 className="w-full bg-blue-500 rounded-t"
-                style={{ height: `${(day.amount / 2000) * 100}%` }}
+                style={{ height: `${(day.amount / 200) * 100}%` }}
               ></div>
               <p className="text-sm text-gray-600 mt-2">
                 {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}

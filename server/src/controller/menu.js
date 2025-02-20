@@ -94,10 +94,10 @@ GROUP BY
 
 // Controller to handle adding a menu item
  const addMenu = async (req, res) => {
-    const { name, description, price, category_name, availability, image_url, tags } = req.body;
+    const { name, description, price, categories, availability, image_url, tags } = req.body;
   
     // Validate required fields
-    if (!name || !price || !category_name) {
+    if (!name || !price || !categories) {
       return res.status(400).json({ message: 'Name, price, and category name are required' });
     }
   
@@ -106,30 +106,38 @@ GROUP BY
   
     try {
       // Check if the category exists, or insert it
-      const [categoryResult] = await connection.execute(
-        'SELECT category_id FROM Categories WHERE name = ?',
-        [category_name]
-      );
-  
       let categoryId;
-      if (categoryResult.length > 0) {
-        categoryId = categoryResult[0].category_id; // Category exists, use its ID
-      } else {
-        // Insert new category if it does not exist
-        const [insertedCategory] = await connection.execute(
-          'INSERT INTO Categories (name) VALUES (?)',
-          [category_name]
+
+      if (Array.isArray(categories) && categories.length > 0) {
+        const categoryName = categories[0]; // Use the first category for now
+    
+        // Check if the category exists, or insert it
+        const [categoryResult] = await connection.execute(
+          'SELECT category_id FROM Categories WHERE name = ?',
+          [categoryName]
         );
-        categoryId = insertedCategory.insertId; // Get the new category ID
+    
+        if (categoryResult.length > 0) {
+          categoryId = categoryResult[0].category_id; // Category exists, use its ID
+        } else {
+          // Insert new category if it does not exist
+          const [insertedCategory] = await connection.execute(
+            'INSERT INTO Categories (name) VALUES (?)',
+            [categoryName]
+          );
+          categoryId = insertedCategory.insertId; // Get the new category ID
+        }
+      } else {
+        throw new Error("Invalid categories data. Categories should be a non-empty array.");
       }
-  
+    
       // Insert the new menu item
       const query = `
         INSERT INTO Menu (name, description, price, category_id, availability)
         VALUES (?, ?, ?, ?, ?)
       `;
       const [menuResult] = await connection.execute(query, [name, description, price, categoryId, availability || true]);
-  
+    
       // Get the menu_item_id of the newly inserted menu item
       const menuItemId = menuResult.insertId;
   
