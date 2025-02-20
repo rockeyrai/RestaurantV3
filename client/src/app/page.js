@@ -14,10 +14,6 @@ function App() {
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  useEffect(() => {
-    dispatch(loadUserFromStorage());
-  }, [dispatch]);  
-
   const handleNavigation = (path) => {
     if (!isAuthenticated) {
       dispatch(toggleLoginModal());

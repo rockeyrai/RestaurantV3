@@ -1,9 +1,11 @@
 'use client';
 
 import { Provider } from 'react-redux';
-import { store } from '@/redux/store';
+import { store, persistor } from '@/redux/store';  // Make sure persistor is imported
+import { PersistGate } from 'redux-persist/integration/react';
 import axios from 'axios';
 
+// Create Axios instance for API requests
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
   headers: {
@@ -12,5 +14,11 @@ export const api = axios.create({
 });
 
 export default function ClientProvider({ children }) {
-  return <Provider store={store}>{children}</Provider>;
+  return (
+    <Provider store={store}>
+      <PersistGate persistor={persistor} loading={null}>
+        {children}
+      </PersistGate>
+    </Provider>
+  );
 }
