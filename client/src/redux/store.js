@@ -20,7 +20,12 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST'], // Ignore persist actions
+        ignoredActions: [
+          'persist/PERSIST',  // Ignore persist actions
+          'persist/REHYDRATE', // Ignore rehydrate actions
+          'persist/PURGE', // Ignore purge actions
+          'persist/FLUSH', // Ignore flush actions
+        ], // Ignore all persist actions that may contain non-serializable values
         ignoredPaths: ['persist', 'rehydrate'], // Ignore specific paths
       },
     }),

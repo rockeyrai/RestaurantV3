@@ -1,11 +1,12 @@
-'use client';
-import { useSelector, useDispatch } from 'react-redux';
-import { useRouter } from 'next/navigation';
-import { FaPhone, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
-import { toggleLoginModal,loadUserFromStorage } from '../redux/slice/auth';
-import LoginModal from '@/component/login';
-import { useEffect } from 'react';
-
+"use client";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { FaPhone, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import { toggleLoginModal, loadUserFromStorage } from "../redux/slice/auth";
+import LoginModal from "@/component/login";
+import { use, useEffect, useState } from "react";
+import CoustomAvatar from "@/component/userAvatar";
+import { User } from "lucide-react";
 
 function App() {
   const dispatch = useDispatch();
@@ -13,19 +14,24 @@ function App() {
   const { showLoginModal } = useSelector((state) => state.auth);
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const [direction, setDirection] = useState("");
 
   const handleNavigation = (path) => {
     if (!isAuthenticated) {
       dispatch(toggleLoginModal());
+      setDirection(path); // Update direction with the path
     } else {
       router.push(path);
     }
   };
 
-  console.log(user)
+  // const handleLogout = () => {
+  //   dispatch(logout());
+  // };
+  console.log(user);
   return (
     <div className="min-h-screen bg-gray-50">
-      {showLoginModal && <LoginModal />}
+      {showLoginModal && <LoginModal direction={direction} />}
       <>
         {/* Hero Section */}
         <div
@@ -36,22 +42,30 @@ function App() {
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-50">
-            <div className='flex justify-end text-white'>
-            {isAuthenticated ? `Welcome ${user?.username}` : ""}
+            <div className="flex justify-end text-white mt-5">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <CoustomAvatar username={user?.username} />
+                </div>
+              ) : (
+                <User className="w-8 h-8 m-5 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer"/>
+              )}
             </div>
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="text-white">
                 <h1 className="text-5xl font-bold mb-4">La Belle Cuisine</h1>
-                <p className="text-xl mb-8">Experience the finest French dining in town</p>
+                <p className="text-xl mb-8">
+                  Experience the finest French dining in town
+                </p>
                 <div className="space-x-4">
                   <button
-                    onClick={() => handleNavigation('/reserve')}
+                    onClick={() => handleNavigation("/reserve")}
                     className="bg-yellow-600 text-white px-8 py-3 rounded-lg hover:bg-yellow-700 transition duration-300"
                   >
                     Reserve a Table
                   </button>
                   <button
-                    onClick={() => handleNavigation('/menu')}
+                    onClick={() => handleNavigation("/menu")}
                     className="bg-white text-yellow-600 px-8 py-3 rounded-lg hover:bg-gray-100 transition duration-300"
                   >
                     Order Food
@@ -65,11 +79,15 @@ function App() {
         {/* About Section */}
         <div className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-8">Welcome to La Belle Cuisine</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">
+              Welcome to La Belle Cuisine
+            </h2>
             <div className="max-w-3xl mx-auto text-center">
               <p className="text-gray-600 mb-6">
-                Established in 1995, La Belle Cuisine brings the authentic taste of French cuisine to your table. 
-                Our award-winning chefs create memorable dining experiences using the finest ingredients and traditional recipes.
+                Established in 1995, La Belle Cuisine brings the authentic taste
+                of French cuisine to your table. Our award-winning chefs create
+                memorable dining experiences using the finest ingredients and
+                traditional recipes.
               </p>
             </div>
           </div>
@@ -93,7 +111,8 @@ function App() {
                 <FaClock className="text-4xl text-yellow-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Hours</h3>
                 <p className="text-gray-600">
-                  Mon-Sat: 11:00 AM - 10:00 PM<br />
+                  Mon-Sat: 11:00 AM - 10:00 PM
+                  <br />
                   Sun: 12:00 PM - 9:00 PM
                 </p>
               </div>

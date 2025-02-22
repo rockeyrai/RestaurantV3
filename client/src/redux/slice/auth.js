@@ -10,7 +10,7 @@ const initialState = {
   error: null,
 };
 
-// Configure axios defaults
+// Configure axios defaults (you can keep this if you still need API calls for login/signup)
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
   headers: {
@@ -27,18 +27,13 @@ export const signUp = createAsyncThunk(
         password,
         username,
       });
-
       return response.data;
     } catch (error) {
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         return rejectWithValue(error.response.data?.message || 'Registration failed');
       } else if (error.request) {
-        // The request was made but no response was received
         return rejectWithValue('No response from server');
       } else {
-        // Something happened in setting up the request that triggered an Error
         return rejectWithValue('Error setting up the request');
       }
     }
@@ -53,7 +48,6 @@ export const signIn = createAsyncThunk(
         email,
         password,
       });
-
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -63,18 +57,6 @@ export const signIn = createAsyncThunk(
       } else {
         return rejectWithValue('Error setting up the request');
       }
-    }
-  }
-);
-
-export const signOut = createAsyncThunk(
-  'auth/signOut',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.post('/signout');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Error during signout');
     }
   }
 );
@@ -99,10 +81,19 @@ const authSlice = createSlice({
       state.isRegistering = !state.isRegistering;
       state.error = null;
     },
+    signOut: (state) => {
+      state.isAuthenticated = false;
+      state.user = null;
+      // Optionally, clear user data from localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+      }
+    } 
   },
   extraReducers: (builder) => {
     builder
       .addCase(signUp.pending, (state) => {
+        console.log("SignUp pending, setting loading to true");
         state.loading = true;
         state.error = null;
       })
@@ -118,12 +109,15 @@ const authSlice = createSlice({
         state.error = action.payload || 'Registration failed';
       })
       .addCase(signIn.pending, (state) => {
+        console.log("Signin pending, setting loading to true");
         state.loading = true;
         state.error = null;
       })
       .addCase(signIn.fulfilled, (state, action) => {
         const { user } = action.payload; // Extract user from API response
         state.isAuthenticated = true;
+        state.loading = false;
+        state.showLoginModal= false,
         state.user = {
           userId: user.user_id,
           username: user.username,
@@ -135,15 +129,9 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Login failed';
       })
-      .addCase(signOut.fulfilled, (state) => {
-        state.isAuthenticated = false;
-        state.user = null;
-      })
-      .addCase(signOut.rejected, (state, action) => {
-        state.error = action.payload || 'Signout failed';
-      });
   },
 });
 
-export const { toggleLoginModal, toggleAuthMode,loadUserFromStorage } = authSlice.actions;
+
+export const { toggleLoginModal, toggleAuthMode, loadUserFromStorage, signOut } = authSlice.actions;
 export default authSlice.reducer;

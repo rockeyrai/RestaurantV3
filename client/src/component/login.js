@@ -4,9 +4,11 @@ import { signIn, signUp, toggleLoginModal, toggleAuthMode } from '../redux/slice
 import { Mail, Lock, UserPlus, LogIn, X, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function AuthModal() {
+export default function AuthModal({direction }) {
   const dispatch = useDispatch();
   const { isRegistering, loading, error } = useSelector((state) => state.auth);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -64,7 +66,13 @@ export default function AuthModal() {
             password: formData.password,
           })
         );
-        router.push('/menu');// Redirect to menu page after successful signup
+      // Check if signIn was successful by checking result
+
+
+        const baseUrl = window.location.origin;
+        console.log(`this is url path ${baseUrl}${direction}`);
+        router.push(`${baseUrl}${direction}`);
+
       } catch (error) {
         // Catch any errors from the signIn action and display them
         if (error.response && error.response.data) {

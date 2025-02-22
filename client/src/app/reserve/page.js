@@ -1,15 +1,20 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, User, Users, Utensils } from 'lucide-react';
 import { api } from '@/component/clientProvider';
 import { useSelector } from 'react-redux';
+import CoustomAvatar from '@/component/userAvatar';
+import { usePathname, useRouter } from 'next/navigation';
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
   const [time, setTime] = useState('12:00');
   const [guests, setGuests] = useState(2);
   const [tables, setTables] = useState([]);
-
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const user = useSelector((state) => state.auth.user);
+    const router = useRouter();
+    const pathname = usePathname();
   // Fetch table data from the API
   useEffect(() => {
     const fetchTables = async () => {
@@ -34,7 +39,6 @@ function Reserve() {
     fetchTables();
   }, []);
   const [selectedTable, setSelectedTable] = useState(null);
-  const user = useSelector((state) => state.auth.user);
 
   function getTodayDate() {
     const today = new Date();
@@ -87,6 +91,41 @@ function Reserve() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
+      <header className="bg-white shadow-md">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-3">
+                <Utensils className="w-8 h-8 text-blue-600" />
+                <h1 className="text-2xl font-bold text-gray-800">RaiFlavors</h1>
+              </div>
+              <div className=" cursor-pointer flex space-x-3 font-bold  items-center text-gray-400">
+                <p
+                  className={pathname === "/menu" ? "underline" : ""}
+                  onClick={() => router.push("/menu")}
+                >
+                  MENU
+                </p>
+                <p
+                  className={pathname === "/reserve" ? "underline" : ""}
+                  onClick={() => router.push("/reserve")}
+                >
+                  RESERVE
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end text-white">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <CoustomAvatar username={user?.username} />
+                </div>
+              ) : (
+                <User className="w-8 h-8 m-5 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer"/>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
       <div 
         className="h-64 bg-cover bg-center"
         style={{

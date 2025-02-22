@@ -144,6 +144,31 @@ function Admin () {
     }
   ]);
 
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const response = await api.get('/employee');
+        console.log(response.data)
+        const data = response.data.map((employee) => ({
+          id: table.id,
+          table_number: table.table_number,
+          seats: table.seats,
+          available: table.available,
+          reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
+          reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
+          no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
+        }));
+        setTables(data);
+        console.log(data); // Log the formatted data
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
+    };
+
+    fetchTables();
+  }, []);
+
+
   const updateOrderStatus = (orderId, newStatus) => {
     setOrders(orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
