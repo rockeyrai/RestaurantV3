@@ -73,7 +73,6 @@ function Menu() {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
-alert(pathname)
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-md">

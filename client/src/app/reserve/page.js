@@ -13,9 +13,15 @@ function Reserve() {
   const [tables, setTables] = useState([]);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const user = useSelector((state) => state.auth.user);
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [maxSeat,setMaxSeat] = useState(null)
     const router = useRouter();
     const pathname = usePathname();
   // Fetch table data from the API
+
+  console.log(`stable number ${selectedTable}`)
+  console.log(`max seat  ${maxSeat}`)
+  console.log(`guesss seat ${guests}`)
   useEffect(() => {
     const fetchTables = async () => {
       try {
@@ -38,11 +44,15 @@ function Reserve() {
 
     fetchTables();
   }, []);
-  const [selectedTable, setSelectedTable] = useState(null);
 
   function getTodayDate() {
     const today = new Date();
     return today.toISOString().split('T')[0];
+  }
+
+  const handleTableSeceletion =(tabaleID,max_seat)=>{
+    setSelectedTable(tabaleID)
+    setMaxSeat(max_seat)
   }
 
   const handleReservation = async () => {
@@ -53,6 +63,11 @@ function Reserve() {
   
     if (!selectedTable) {
       alert('Please select a table');
+      return;
+    }
+
+    if (guests > maxSeat ){
+      alert(`Not enough seat, Please select another table`)
       return;
     }
   
@@ -217,7 +232,7 @@ function Reserve() {
                   }
                 `
                 }
-                onClick={() => table.available && setSelectedTable(table.id)}
+                onClick={() => table.available && handleTableSeceletion(table.id,table.seats)}
               >
                 <h3 className="font-medium">Table {table.table_number}</h3>
                 <p className="text-sm text-gray-600">{table.seats} Seats</p>
