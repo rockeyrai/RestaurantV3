@@ -102,70 +102,90 @@ function Admin () {
   ]);
 
   const [dailySales] = useState([
-    { date: '2024-03-09', amount: 1250 },
-    { date: '2024-03-10', amount: 1420 },
-    { date: '2024-03-11', amount: 1180 },
-    { date: '2024-03-12', amount: 1350 },
-    { date: '2024-03-13', amount: 1510 },
-    { date: '2024-03-14', amount: 1680 },
-    { date: '2024-03-15', amount: 1420 },
+    { date: "2025-01-01", sale: 134 },
+    { date: "2025-01-02", sale: 178 },
+    { date: "2025-01-03", sale: 190 },
+    { date: "2025-01-04", sale: 157 },
+    { date: "2025-01-05", sale: 211 },
+    { date: "2025-01-06", sale: 165 },
+    { date: "2025-01-07", sale: 223 },
+    { date: "2025-01-08", sale: 187 },
+    { date: "2025-01-09", sale: 203 },
+    { date: "2025-01-10", sale: 192 },
+    { date: "2025-01-11", sale: 176 },
+    { date: "2025-01-12", sale: 198 },
+    { date: "2025-01-13", sale: 211 },
+    { date: "2025-01-14", sale: 233 },
+    { date: "2025-01-15", sale: 178 },
+    { date: "2025-01-16", sale: 197 },
+    { date: "2025-01-17", sale: 205 },
+    { date: "2025-01-18", sale: 181 },
+    { date: "2025-01-19", sale: 210 },
+    { date: "2025-01-20", sale: 194 },
+    { date: "2025-01-21", sale: 183 },
+    { date: "2025-01-22", sale: 222 },
+    { date: "2025-01-23", sale: 190 },
+    { date: "2025-01-24", sale: 202 },
+    { date: "2025-01-25", sale: 172 },
+    { date: "2025-01-26", sale: 185 },
+    { date: "2025-01-27", sale: 201 },
+    { date: "2025-01-28", sale: 219 },
+    { date: "2025-01-29", sale: 176 },
+    { date: "2025-01-30", sale: 188 },
+    { date: "2025-01-31", sale: 223 },
+    { date: "2025-02-01", sale: 245 },
+    { date: "2025-02-02", sale: 198 },
+    { date: "2025-02-03", sale: 176 },
+    { date: "2025-02-04", sale: 190 },
+    { date: "2025-02-05", sale: 203 },
+    { date: "2025-02-06", sale: 222 },
+    { date: "2025-02-07", sale: 214 },
+    { date: "2025-02-08", sale: 173 },
+    { date: "2025-02-09", sale: 189 },
+    { date: "2025-02-10", sale: 205 },
+    { date: "2025-02-11", sale: 182 },
+    { date: "2025-02-12", sale: 199 },
+    { date: "2025-02-13", sale: 230 },
+    { date: "2025-02-14", sale: 207 },
+    { date: "2025-02-15", sale: 218 },
+    { date: "2025-02-16", sale: 224 },
+    { date: "2025-02-17", sale: 180 },
+    { date: "2025-02-18", sale: 196 },
+    { date: "2025-02-19", sale: 200 },
+    { date: "2025-02-20", sale: 212 },
+    { date: "2025-02-21", sale: 201 },
+    { date: "2025-02-22", sale: 189 },
+    { date: "2025-02-23", sale: 215 },
   ]);
-
-  const [staff, setStaff] = useState([
-    {
-      id: 1,
-      name: 'Michael Chen',
-      email: 'michael.chen@restaurant.com',
-      phone_number: '555-0101',
-      role: 'chef',
-      schedule: [
-        { id: 2, staff_id: 1, shift_start: '2024-03-16 09:00', shift_end: '2024-03-16 17:00' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.j@restaurant.com',
-      phone_number: '555-0102',
-      role: 'waiter',
-      schedule: [
-        { id: 3, staff_id: 2, shift_start: '2024-03-15 12:00', shift_end: '2024-03-15 20:00' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'David Wilson',
-      email: 'david.w@restaurant.com',
-      phone_number: '555-0103',
-      role: 'manager',
-      schedule: [
-        { id: 4, staff_id: 3, shift_start: '2024-03-15 08:00', shift_end: '2024-03-15 16:00' }
-      ]
-    }
-  ]);
+  
+  
+  const [staff, setStaff] = useState([]);
 
   useEffect(() => {
-    const fetchTables = async () => {
+    const fetachemployee = async () => {
       try {
         const response = await api.get('/employee');
-        console.log(response.data)
-        const data = response.data.map((employee) => ({
-          id: table.id,
-          table_number: table.table_number,
-          seats: table.seats,
-          available: table.available,
-          reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
-          reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
-          no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
+        const transformedData = response.data.map(employee => ({
+          id: employee.id,
+          name: employee.name,
+          email: employee.email,
+          phone_number: employee.phone_number,
+          role: employee.role,
+          schedule: employee.schedule.map(schedule => ({
+            id: schedule.id,
+            staff_id: schedule.staff_id,
+            shift_start: new Date(schedule.shift_start).toISOString().slice(0, 16).replace('T', ' '),
+            shift_end: new Date(schedule.shift_end).toISOString().slice(0, 16).replace('T', ' ')
+          }))
         }));
-        setTables(data);
-        console.log(data); // Log the formatted data
+        console.log(`Transformed Employee Data: ${JSON.stringify(transformedData)}`);
+        setStaff(transformedData);
       } catch (error) {
-        console.error('Error fetching tables:', error);
+        console.error('Error fetching employee data:', error);
       }
     };
 
-    fetchTables();
+    fetachemployee();
   }, []);
 
 
@@ -188,7 +208,7 @@ function Admin () {
   };
 
   const getTotalSales = () => {
-    return dailySales.reduce((total, day) => total + day.amount, 0).toFixed(2);
+    return dailySales.reduce((total, day) => total + day.sale, 0).toFixed(2);
   };
 
   const getActiveOrders = () => {

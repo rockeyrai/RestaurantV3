@@ -5,6 +5,8 @@ const { connectMySql, mysqlPool } = require("./database/mysql");
 const userRouter = require("./router/user")
 const menuRouter = require("./router/menu")
 const tableRouter = require("./router/table")
+const employeeRouter = require("./router/employee")
+const orderRouter = require("./router/order")
 require("dotenv").config();
 
 // Connect to databases
@@ -37,6 +39,8 @@ testQuery();
 app.use(userRouter);
 app.use(menuRouter)
 app.use(tableRouter)
+app.use(employeeRouter)
+app.use(orderRouter)
 
 // Set port with fallback if the environment variable is not set
 const PORT = process.env.MY_PORT || 6000;
