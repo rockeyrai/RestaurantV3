@@ -45,11 +45,11 @@ const CoustomAvatar = ({ username }) => {
     <div className="relative">
       {/* Avatar */}
       <div
-        className="w-10 h-10 flex mx-5 ring-2 ring-gray-300 dark:ring-gray-500 items-center justify-center rounded-full bg-blue-500 text-white font-bold cursor-pointer"
+        className="w-8 h-8 flex mx-5 ring-2 ring-gray-300 dark:ring-gray-500 items-center justify-center rounded-full bg-blue-500 text-white font-bold cursor-pointer"
         title={username}
         onClick={handleAvatarClick}
       >
-        {username && <span className="top-0 left-12 absolute  w-3.5 h-3.5 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></span>}
+        {username && <span className="top-0 left-12 absolute  w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></span>}
         {initials}
       </div>
 

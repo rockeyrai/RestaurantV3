@@ -1,31 +1,63 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users } from 'lucide-react';
-import { api } from '@/component/clientProvider';
-import { useSelector } from 'react-redux';
+"use client";
+import React, { useState, useEffect } from "react";
+import { Calendar, Clock, Users } from "lucide-react";
+import { api } from "@/component/clientProvider";
+import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
-  const [time, setTime] = useState('12:00');
+  const [time, setTime] = useState("3:32:PM");
   const [guests, setGuests] = useState(2);
   const [tables, setTables] = useState([]);
   const user = useSelector((state) => state.auth.user);
   const [selectedTable, setSelectedTable] = useState(null);
-  const [maxSeat,setMaxSeat] = useState(null)
+  const [maxSeat, setMaxSeat] = useState(null);
   // Fetch table data from the API
 
-  console.log(`stable number ${selectedTable}`)
-  console.log(`max seat  ${maxSeat}`)
-  console.log(`guesss seat ${guests}`)
+  console.log(`stable number ${selectedTable}`);
+  console.log(`max seat  ${maxSeat}`);
+  console.log(`guesss seat ${guests}`);
   
+  useEffect(() => {
+    // Get the current time in 12-hour format with AM/PM
+    const now = new Date();
+    const hours24 = now.getHours();
+    const hours12 = hours24 % 12 || 12; // Convert to 12-hour format
+    const minutes = now.getMinutes().toString().padStart(2, "0"); // Pad minutes
+    const period = hours24 < 12 ? "AM" : "PM"; // Determine AM or PM
+
+    // Set initial time as current time
+    const currentTime = `${hours12}:${minutes} ${period}`;
+    setTime(currentTime);
+  }, []);
+
+  const generateTimeOptions = () => {
+    const options = [];
+    const currentTime = new Date();
+    const currentHours = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+    
+    // Generate 24-hour time slots starting from the current time
+    for (let i = 0; i < 24; i++) {
+      const hour24 = (currentHours + i) % 24;
+      const hour12 = hour24 % 12 || 12; // Convert to 12-hour format
+      const minutes = "00"; // Set minutes to 00 for now
+      const period = hour24 < 12 ? "AM" : "PM"; // Determine AM or PM
+      const timeSlot = `${hour12.toString().padStart(2, "0")}:${minutes} ${period}`;
+
+      options.push(timeSlot);
+    }
+    return options;
+  };
+
   useEffect(() => {
     // Fetch initial table data from the API
     const fetchTables = async () => {
       try {
-        const response = await api.get('/tables'); // Replace with your API endpoint
+        const response = await api.get("/tables"); // Replace with your API endpoint
         const data = response.data;
-  
+
         // Transform the data: Convert available (1/0) to true/false
         const formattedData = data.map((table) => ({
           id: table.id,
@@ -33,18 +65,18 @@ function Reserve() {
           seats: table.seats,
           available: table.available === 1, // Convert to boolean
         }));
-  
+
         setTables(formattedData);
       } catch (error) {
-        console.error('Error fetching tables:', error);
+        console.error("Error fetching tables:", error);
       }
     };
-  
+
     fetchTables();
-  
+
     // Initialize Socket.IO connection
     const socket = io(`${process.env.NEXT_PUBLIC_FRONTEND_API}`); // Replace with your server URL
-  
+
     // Listen for table updates
     socket.on("tableUpdated", (updatedTable) => {
       console.log("Table updated:", updatedTable);
@@ -59,45 +91,45 @@ function Reserve() {
         )
       );
     });
-  
+
     // Listen for new table reservations
     socket.on("tableReserved", (newTable) => {
       console.log("New table reserved:", newTable);
       setTables((prevTables) => [...prevTables, newTable]);
     });
-  
+
     // Cleanup the Socket.IO connection on unmount
     return () => {
       socket.disconnect();
     };
   }, []);
-  
+
   function getTodayDate() {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().split("T")[0];
   }
 
-  const handleTableSeceletion =(tabaleID,max_seat)=>{
-    setSelectedTable(tabaleID)
-    setMaxSeat(max_seat)
-  }
+  const handleTableSeceletion = (tabaleID, max_seat) => {
+    setSelectedTable(tabaleID);
+    setMaxSeat(max_seat);
+  };
 
   const handleReservation = async () => {
     if (!user) {
-      alert('Please log in to make a reservation');
-      return;
-    }
-  
-    if (!selectedTable) {
-      alert('Please select a table');
+      alert("Please log in to make a reservation");
       return;
     }
 
-    if (guests > maxSeat ){
-      alert(`Not enough seat, Please select another table`)
+    if (!selectedTable) {
+      alert("Please select a table");
       return;
     }
-  
+
+    if (guests > maxSeat) {
+      alert(`Not enough seat, Please select another table`);
+      return;
+    }
+
     const reservationData = {
       table_id: selectedTable,
       user_id: user.userId,
@@ -107,12 +139,12 @@ function Reserve() {
       reserve_date: date,
       no_of_people: guests,
     };
-  
+
     try {
-      const response = await api.post('/tables', reservationData);
-  
+      const response = await api.post("/tables", reservationData);
+
       if (response.status === 201 || response.status === 200) {
-        alert('Reservation successful!');
+        alert("Reservation successful!");
         // Optionally, refresh the table data or update the state
         setTables((prevTables) =>
           prevTables.map((table) =>
@@ -121,22 +153,22 @@ function Reserve() {
         );
         setSelectedTable(null); // Reset selected table
       } else {
-        alert('Failed to make a reservation. Please try again.');
+        alert("Failed to make a reservation. Please try again.");
       }
     } catch (error) {
-      console.error('Error making reservation:', error);
-      alert('An error occurred while making the reservation.');
+      console.error("Error making reservation:", error);
+      alert("An error occurred while making the reservation.");
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div 
+      <div
         className="h-64 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80)'
+          backgroundImage:
+            "url(https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80)",
         }}
       >
         <div className="h-full w-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -163,7 +195,7 @@ function Reserve() {
               />
             </div>
 
-            {/* Time Selection */}
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Clock className="inline-block w-4 h-4 mr-2" />
@@ -171,13 +203,11 @@ function Reserve() {
               </label>
               <select
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={(e) => setTime(e.target.value)} // Update time on change
                 className="w-full p-2 border rounded-md"
               >
-                {Array.from({ length: 24 }, (_, i) => {
-                  const hour = i.toString().padStart(2, '0');
-                  return `${hour}:00`;
-                }).map((timeSlot) => (
+                {/* Generate 24-hour time slots starting from the current time */}
+                {generateTimeOptions().map((timeSlot) => (
                   <option key={timeSlot} value={timeSlot}>
                     {timeSlot}
                   </option>
@@ -198,7 +228,7 @@ function Reserve() {
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                   <option key={num} value={num}>
-                    {num} {num === 1 ? 'Guest' : 'Guests'}
+                    {num} {num === 1 ? "Guest" : "Guests"}
                   </option>
                 ))}
               </select>
@@ -213,23 +243,29 @@ function Reserve() {
             {tables.map((table) => (
               <div
                 key={table.id}
-                className={
-                  `
+                className={`
                   p-4 rounded-lg border-2 cursor-pointer transition-all
-                  ${table.available ? 
-                    selectedTable === table.id ?
-                      'border-green-500 bg-green-50' :
-                      'border-gray-200 hover:border-green-300' :
-                    'border-red-200 bg-red-50 cursor-not-allowed'
+                  ${
+                    table.available
+                      ? selectedTable === table.id
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-green-300"
+                      : "border-red-200 bg-red-50 cursor-not-allowed"
                   }
-                `
+                `}
+                onClick={() =>
+                  table.available &&
+                  handleTableSeceletion(table.id, table.seats)
                 }
-                onClick={() => table.available && handleTableSeceletion(table.id,table.seats)}
               >
                 <h3 className="font-medium">Table {table.table_number}</h3>
                 <p className="text-sm text-gray-600">{table.seats} Seats</p>
-                <p className={`text-sm ${table.available ? 'text-green-600' : 'text-red-600'}`}>
-                  {table.available ? 'Available' : 'Reserved'}
+                <p
+                  className={`text-sm ${
+                    table.available ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {table.available ? "Available" : "Reserved"}
                 </p>
               </div>
             ))}
@@ -240,17 +276,16 @@ function Reserve() {
             <button
               onClick={handleReservation}
               disabled={!selectedTable || !user}
-              className={
-                `
+              className={`
                 px-8 py-3 rounded-lg font-medium text-white
-                ${selectedTable && user ?
-                  'bg-green-600 hover:bg-green-700' :
-                  'bg-gray-400 cursor-not-allowed'
+                ${
+                  selectedTable && user
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-gray-400 cursor-not-allowed"
                 }
-              `
-              }
+              `}
             >
-              {!user ? 'Please Log In to Reserve' : 'Confirm Reservation'}
+              {!user ? "Please Log In to Reserve" : "Confirm Reservation"}
             </button>
           </div>
         </div>
