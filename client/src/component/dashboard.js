@@ -50,7 +50,7 @@ const Dashboard = ({
 
   const filteredData = dailySales.filter((item) => {
     const date = new Date(item.date);
-    const referenceDate = new Date("2024-06-30");
+    const referenceDate = new Date("2025-02-24");
     let daysToSubtract = 90;
     if (timeRange === "30d") {
       daysToSubtract = 30;
@@ -187,7 +187,7 @@ const Dashboard = ({
                     }
                   />
                   <Area
-                    dataKey="desktop"
+                    dataKey="sale"
                     type="natural"
                     fill="url(#fillDesktop)"
                     stroke="var(--color-desktop)"

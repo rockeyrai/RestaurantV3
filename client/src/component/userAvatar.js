@@ -1,3 +1,4 @@
+'use client'
 import { signOut } from '@/redux/slice/auth';
 import { useDispatch } from 'react-redux';
 import { persistStore } from 'redux-persist';  // Import persistStore

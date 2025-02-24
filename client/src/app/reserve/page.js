@@ -15,8 +15,8 @@ function Reserve() {
   const user = useSelector((state) => state.auth.user);
   const [selectedTable, setSelectedTable] = useState(null);
   const [maxSeat,setMaxSeat] = useState(null)
-    const router = useRouter();
-    const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
   // Fetch table data from the API
 
   console.log(`stable number ${selectedTable}`)
@@ -126,6 +126,12 @@ function Reserve() {
                   onClick={() => router.push("/reserve")}
                 >
                   RESERVE
+                </p>
+                <p
+                  className={pathname === "/Order" ? "underline" : ""}
+                  onClick={() => router.push("/order")}
+                >
+                  ORDER
                 </p>
               </div>
             </div>

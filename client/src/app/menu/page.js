@@ -96,6 +96,12 @@ function Menu() {
                 >
                   RESERVE
                 </p>
+                <p
+                  className={pathname === "/Order" ? "underline" : ""}
+                  onClick={() => router.push("/order")}
+                >
+                  ORDER
+                </p>
               </div>
             </div>
             <div className="flex justify-end text-white">

@@ -18,8 +18,9 @@ import axios from 'axios';
 function Admin () {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [menuItems, setMenuItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tables, setTables] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
@@ -50,7 +51,22 @@ function Admin () {
   
     fetchMenu();
   }, []);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const response = await api.get('/admin/orders');
+        const orderData =response.data.orders
+        setOrders(orderData);
+      } catch (err) {
+        setError("Failed to fetch orders. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
   
+    fetchOrder();
+  }, []);
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -77,29 +93,7 @@ function Admin () {
   }, []);
     
 
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      table: 1,
-      items: [
-        { name: 'Margherita Pizza', quantity: 1, price: 12.99 },
-        { name: 'Caesar Salad', quantity: 2, price: 17.98 }
-      ],
-      total: 30.97,
-      status: 'preparing',
-      timestamp: '2024-03-15 18:30'
-    },
-    {
-      id: 2,
-      table: 4,
-      items: [
-        { name: 'Spaghetti Carbonara', quantity: 2, price: 29.98 }
-      ],
-      total: 29.98,
-      status: 'pending',
-      timestamp: '2024-03-15 18:45'
-    }
-  ]);
+
 
   const [dailySales] = useState([
     { date: "2025-01-01", sale: 134 },
@@ -212,11 +206,15 @@ function Admin () {
   };
 
   const getActiveOrders = () => {
-    return orders.filter(order => order.status !== 'completed').length;
+    return orders.filter((order) => order.status !== 'completed').length;
   };
+  
+  console.log(getActiveOrders());
+  
 
+  console.log(getActiveOrders)
   const getAvailableTables = () => {
-    return tables.filter(table => table.available).length;
+    return tables.filter(table => table.available).length ; 
   };
 
   return (
