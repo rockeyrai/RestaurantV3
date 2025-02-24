@@ -1,9 +1,15 @@
 const express = require('express');
-const { getTables, saveTableReservation, fetchTableAdmin } = require('../controller/table');
-const router = express.Router();
+const { getTables, saveTableReservation, fetchTableAdmin, toggleTableAvailability } = require('../controller/table');
 
-router.get('/tables',getTables)
-router.post("/tables",saveTableReservation)
-router.get('/admin/tables',fetchTableAdmin)
+const createTableRouter = (io) => {
+  const router = express.Router();
 
-module.exports = router
+  router.get('/tables', getTables);
+  router.post("/tables", ('/tables', (req, res) => saveTableReservation(req, res, io)));
+  router.get('/admin/tables', fetchTableAdmin);
+  router.put('/tables/:tableId/availability', (req, res) => toggleTableAvailability(req, res, io));
+
+  return router;
+};
+
+module.exports = createTableRouter;

@@ -5,6 +5,7 @@ import { api } from '@/component/clientProvider';
 import { useSelector } from 'react-redux';
 import CoustomAvatar from '@/component/userAvatar';
 import { usePathname, useRouter } from 'next/navigation';
+import { io } from "socket.io-client";
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
@@ -22,12 +23,14 @@ function Reserve() {
   console.log(`stable number ${selectedTable}`)
   console.log(`max seat  ${maxSeat}`)
   console.log(`guesss seat ${guests}`)
+  
   useEffect(() => {
+    // Fetch initial table data from the API
     const fetchTables = async () => {
       try {
         const response = await api.get('/tables'); // Replace with your API endpoint
-        const data = await response.data;
-
+        const data = response.data;
+  
         // Transform the data: Convert available (1/0) to true/false
         const formattedData = data.map((table) => ({
           id: table.id,
@@ -35,16 +38,45 @@ function Reserve() {
           seats: table.seats,
           available: table.available === 1, // Convert to boolean
         }));
-
+  
         setTables(formattedData);
       } catch (error) {
         console.error('Error fetching tables:', error);
       }
     };
-
+  
     fetchTables();
+  
+    // Initialize Socket.IO connection
+    const socket = io(`${process.env.NEXT_PUBLIC_FRONTEND_API}`); // Replace with your server URL
+  
+    // Listen for table updates
+    socket.on("tableUpdated", (updatedTable) => {
+      console.log("Table updated:", updatedTable);
+      setTables((prevTables) =>
+        prevTables.map((table) =>
+          table.id === updatedTable.id // Ensure we're comparing by id
+            ? {
+                ...table,
+                available: updatedTable.available === 1, // Ensure boolean format
+              }
+            : table
+        )
+      );
+    });
+  
+    // Listen for new table reservations
+    socket.on("tableReserved", (newTable) => {
+      console.log("New table reserved:", newTable);
+      setTables((prevTables) => [...prevTables, newTable]);
+    });
+  
+    // Cleanup the Socket.IO connection on unmount
+    return () => {
+      socket.disconnect();
+    };
   }, []);
-
+  
   function getTodayDate() {
     const today = new Date();
     return today.toISOString().split('T')[0];

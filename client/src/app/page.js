@@ -7,6 +7,7 @@ import LoginModal from "@/component/login";
 import { use, useEffect, useState } from "react";
 import CoustomAvatar from "@/component/userAvatar";
 import { User } from "lucide-react";
+import { io, Socket } from "socket.io-client";
 
 function App() {
   const dispatch = useDispatch();
@@ -15,6 +16,28 @@ function App() {
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [direction, setDirection] = useState("");
+
+  const socket = io(`${process.env.NEXT_PUBLIC_FRONTEND_API}`); // Replace with your server URL
+  
+  useEffect(() => {
+    const socket = io("http://localhost:8000");
+  
+    socket.on("connect", () => console.log("Connected"));
+    socket.on("disconnect", () => console.log("Disconnected"));
+  
+    return () => socket.disconnect(); // Cleanup
+  }, []);
+  
+    
+    // Listen for messages from the server
+    socket.on("message", (data) => {
+      console.log("Message from server:", data);
+    });
+    
+    // Handle disconnection
+    socket.on("disconnect", () => {
+      console.log("Disconnected from server");
+    });
 
   const handleNavigation = (path) => {
     if (!isAuthenticated) {

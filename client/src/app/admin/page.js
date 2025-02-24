@@ -13,6 +13,7 @@ import Staff from '@/component/staffSection';
 import Tables from '@/component/tableSection';
 import Menu from '@/component/menuSection';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 
 function Admin () {
@@ -68,28 +69,41 @@ function Admin () {
     fetchOrder();
   }, []);
 
-  useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const response = await api.get('/admin/tables');
-        console.log(response.data)
-        const data = response.data.map((table) => ({
-          id: table.id,
-          table_number: table.table_number,
-          seats: table.seats,
-          available: table.available,
-          reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
-          reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
-          no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
-        }));
-        setTables(data);
-        console.log(data); // Log the formatted data
-      } catch (error) {
-        console.error('Error fetching tables:', error);
-      }
-    };
+  const fetchTables = async () => {
+    try {
+      const response = await api.get('/admin/tables');
+      console.log(response.data);
+      const data = response.data.map((table) => ({
+        id: table.id,
+        table_number: table.table_number,
+        seats: table.seats,
+        available: table.available,
+        reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
+        reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
+        no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
+      }));
+      setTables(data);
+      console.log(data); // Log the formatted data
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
 
+  // Initialize Socket.IO and listen for real-time updates
+  useEffect(() => {
+    const newSocket = io("http://localhost:8000"); // Replace with your server URL
+
+    // Listen for 'tableUpdated' event
+    newSocket.on("tableUpdated", () => {
+      fetchTables(); // Fetch the latest tables when an update occurs
+    });
+
+    // Fetch initial table data when the component mounts
     fetchTables();
+
+    return () => {
+      newSocket.disconnect(); // Cleanup socket connection when component unmounts
+    };
   }, []);
     
 
