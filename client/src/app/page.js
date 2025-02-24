@@ -2,12 +2,10 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { FaPhone, FaMapMarkerAlt, FaClock } from "react-icons/fa";
-import { toggleLoginModal, loadUserFromStorage } from "../redux/slice/auth";
+import { toggleLoginModal } from "../redux/slice/auth";
 import LoginModal from "@/component/login";
-import { use, useEffect, useState } from "react";
-import CoustomAvatar from "@/component/userAvatar";
-import { User } from "lucide-react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 function App() {
   const dispatch = useDispatch();
@@ -65,15 +63,6 @@ function App() {
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-50">
-            <div className="flex justify-end text-white mt-5">
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <CoustomAvatar username={user?.username} />
-                </div>
-              ) : (
-                <User className="w-8 h-8 m-5 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer"/>
-              )}
-            </div>
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="text-white">
                 <h1 className="text-5xl font-bold mb-4">La Belle Cuisine</h1>

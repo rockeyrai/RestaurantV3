@@ -1,14 +1,9 @@
 "use client";
-
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { User, Utensils } from "lucide-react";
 import MenuFilter from "@/component/MenuFilter";
 import MenuCard from "@/component/MenuCard";
-import CoustomAvatar from "@/component/userAvatar";
 import { useSelector } from "react-redux";
-import { usePathname, useRouter } from "next/navigation";
-
 
 function Menu() {
   const [menuItems, setMenuItems] = useState([]);
@@ -17,11 +12,7 @@ function Menu() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
-  const user = useSelector((state) => state.auth.user);
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const router = useRouter();
-  const pathname = usePathname();
-
+  
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
     headers: {
@@ -75,48 +66,6 @@ function Menu() {
   if (error) return <div>{error}</div>;
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <Utensils className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-800">RaiFlavors</h1>
-              </div>
-              <div className=" cursor-pointer flex space-x-3 font-bold  items-center text-gray-400">
-                <p
-                  className={pathname === "/menu" ? "underline" : ""}
-                  onClick={() => router.push("/menu")}
-                >
-                  MENU
-                </p>
-                <p
-                  className={pathname === "/reserve" ? "underline" : ""}
-                  onClick={() => router.push("/reserve")}
-                >
-                  RESERVE
-                </p>
-                <p
-                  className={pathname === "/Order" ? "underline" : ""}
-                  onClick={() => router.push("/order")}
-                >
-                  ORDER
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end text-white">
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <CoustomAvatar username={user?.username} />
-                </div>
-              ) : (
-                <User className="w-8 h-8 m-5 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer" />
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8">
         <MenuFilter
           categories={categories}

@@ -1,6 +1,6 @@
 'use client'
 import { signOut } from '@/redux/slice/auth';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { persistStore } from 'redux-persist';  // Import persistStore
 import React, { useState } from 'react';
 import { store } from '@/redux/store';
@@ -22,9 +22,10 @@ const CoustomAvatar = ({ username }) => {
   const initials = getInitials(username);
 
   const handleAvatarClick = () => {
-    setIsDropdownOpen((prev) => !prev); // Toggle dropdown visibility
+    // Toggle dropdown visibility
+    setIsDropdownOpen((prev) => !prev);
   };
-
+  
   const handleLogout = () => {
     // Dispatch the signOut action
     dispatch(signOut());
@@ -53,7 +54,7 @@ const CoustomAvatar = ({ username }) => {
       </div>
 
       {/* Dropdown */}
-      {isDropdownOpen && (
+      {isDropdownOpen && 
         <div className="absolute right-0 mt-2 mx-4 w-auto bg-white border border-gray-200 rounded-lg shadow-lg">
           <button
             className="w-full px-2 py-2 text-sm text-center text-gray-700 hover:bg-gray-100"
@@ -62,7 +63,7 @@ const CoustomAvatar = ({ username }) => {
             Logout
           </button>
         </div>
-      )}
+}
     </div>
   );
 };

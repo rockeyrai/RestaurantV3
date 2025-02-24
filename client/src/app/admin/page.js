@@ -14,6 +14,9 @@ import Tables from '@/component/tableSection';
 import Menu from '@/component/menuSection';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { useSelector } from 'react-redux';
+import Router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 
 function Admin () {
@@ -22,6 +25,8 @@ function Admin () {
   const [loading, setLoading] = useState(true);
   const [tables, setTables] = useState([]);
   const [orders, setOrders] = useState([]);
+  const user = useSelector((state) => state.auth.user);
+  const router = useRouter()
 
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
@@ -30,7 +35,31 @@ function Admin () {
     },
   });
 
-  useEffect(() => {
+  useEffect(()=>{
+    if(user.role !== "admin"){
+      router.push("/")
+    }else{
+      fetchMenu()
+      fetchOrder()
+      fetchTables()
+      
+  // Initialize Socket.IO and listen for real-time updates
+      const newSocket = io("http://localhost:8000"); // Replace with your server URL
+
+      // Listen for 'tableUpdated' event
+      newSocket.on("tableUpdated", () => {
+        fetchTables(); // Fetch the latest tables when an update occurs
+      });
+  
+      // Fetch initial table data when the component mounts
+      fetchTables();
+  
+      return () => {
+        newSocket.disconnect(); // Cleanup socket connection when component unmounts
+      };
+    }
+  },[])
+
     const fetchMenu = async () => {
       try {
         const response = await api.get('/menu');
@@ -49,11 +78,7 @@ function Admin () {
         setLoading(false);
       }
     };
-  
-    fetchMenu();
-  }, []);
 
-  useEffect(() => {
     const fetchOrder = async () => {
       try {
         const response = await api.get('/admin/orders');
@@ -66,8 +91,6 @@ function Admin () {
       }
     };
   
-    fetchOrder();
-  }, []);
 
   const fetchTables = async () => {
     try {
@@ -88,26 +111,7 @@ function Admin () {
       console.error('Error fetching tables:', error);
     }
   };
-
-  // Initialize Socket.IO and listen for real-time updates
-  useEffect(() => {
-    const newSocket = io("http://localhost:8000"); // Replace with your server URL
-
-    // Listen for 'tableUpdated' event
-    newSocket.on("tableUpdated", () => {
-      fetchTables(); // Fetch the latest tables when an update occurs
-    });
-
-    // Fetch initial table data when the component mounts
-    fetchTables();
-
-    return () => {
-      newSocket.disconnect(); // Cleanup socket connection when component unmounts
-    };
-  }, []);
     
-
-
 
   const [dailySales] = useState([
     { date: "2025-01-01", sale: 134 },
@@ -235,9 +239,6 @@ function Admin () {
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-md">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">Restaurant Admin</h1>
-        </div>
         <nav className="mt-6">
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
