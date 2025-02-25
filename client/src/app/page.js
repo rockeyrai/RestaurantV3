@@ -65,9 +65,9 @@ function App() {
           <div className="absolute inset-0 bg-black bg-opacity-50">
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="text-white">
-                <h1 className="text-5xl font-bold mb-4">La Belle Cuisine</h1>
+                <h1 className="text-5xl font-bold mb-4">RaiFlavors</h1>
                 <p className="text-xl mb-8">
-                  Experience the finest French dining in town
+                  Experience the finest Nepalese dining in town
                 </p>
                 <div className="space-x-4">
                   <button
@@ -92,12 +92,12 @@ function App() {
         <div className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">
-              Welcome to La Belle Cuisine
+              Welcome to RaiFlavors
             </h2>
             <div className="max-w-3xl mx-auto text-center">
               <p className="text-gray-600 mb-6">
-                Established in 1995, La Belle Cuisine brings the authentic taste
-                of French cuisine to your table. Our award-winning chefs create
+                Established in 1995, RaiFlavors brings the authentic taste
+                of Nepalese cuisine to your table. Our award-winning chefs create
                 memorable dining experiences using the finest ingredients and
                 traditional recipes.
               </p>
@@ -117,7 +117,7 @@ function App() {
               <div className="text-center">
                 <FaMapMarkerAlt className="text-4xl text-yellow-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Location</h3>
-                <p className="text-gray-600">123 Gourmet Street, Foodville</p>
+                <p className="text-gray-600">Kirtipur 44600</p>
               </div>
               <div className="text-center">
                 <FaClock className="text-4xl text-yellow-600 mx-auto mb-4" />
@@ -136,7 +136,7 @@ function App() {
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2024 La Belle Cuisine. All rights reserved.</p>
+          <p>&copy; 2024 RaiFlavors. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -31,7 +31,7 @@ const CoustomeNavbar = () => {
           <div className="flex justify-between">
             <div className="flex justify-between gap-8">
               {/* Logo Section */}
-              <div className="flex space-x-3">
+              <div className="flex space-x-3 cursor-pointer" onClick={()=>{router.push('/')}}>
                 <Utensils className="w-8 h-8 text-blue-600" />
                 <h1 className="text-2xl font-bold text-gray-800">RaiFlavors</h1>
               </div>
@@ -72,7 +72,7 @@ const CoustomeNavbar = () => {
               ) : (
                 <User
                   onClick={() => handleNavigation(`${pathname}`)}
-                  className="w-8 h-8 m-5 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer"
+                  className="w-8 h-8 mx-3 flex items-center justify-center rounded-full bg-gray-500 text-white cursor-pointer"
                 />
               )}
             </div>

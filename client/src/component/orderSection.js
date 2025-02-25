@@ -45,7 +45,6 @@ const Orders = ({ orders, updateOrderStatus }) => {
                   >
                     <option value="pending">Pending</option>
                     <option value="preparing">Preparing</option>
-                    <option value="served">Served</option>
                     <option value="completed">Completed</option>
                   </select>
                 </td>

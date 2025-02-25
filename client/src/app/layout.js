@@ -3,6 +3,7 @@ import "./globals.css";
 import ClientProvider from "@/component/clientProvider";
 import Head from "next/head"; // Add this import
 import CoustomeNavbar from "@/component/navbara";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
       >
         <ClientProvider>
           <CoustomeNavbar/>
+          <Toaster />
           {children}
           </ClientProvider>
       </body>

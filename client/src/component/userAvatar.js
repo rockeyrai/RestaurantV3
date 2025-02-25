@@ -55,7 +55,7 @@ const CoustomAvatar = ({ username }) => {
 
       {/* Dropdown */}
       {isDropdownOpen && 
-        <div className="absolute right-0 mt-2 mx-4 w-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+        <div className="absolute right-0 mt-2 mx-4 w-auto z-50 bg-white border border-gray-200 rounded-lg shadow-lg">
           <button
             className="w-full px-2 py-2 text-sm text-center text-gray-700 hover:bg-gray-100"
             onClick={handleLogout}

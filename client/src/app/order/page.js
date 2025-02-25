@@ -1,18 +1,12 @@
 "use client";
-import CoustomAvatar from "@/component/userAvatar";
-import { User, Utensils } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { api } from "@/component/clientProvider";
 import { Button } from "@/components/ui/button";
 
 const Order = () => {
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const user = useSelector((state) => state.auth.user);
   const [orders, setOrders] = useState([]);
-  const router = useRouter();
-  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [payableamount, setPayableamount] = useState(null);

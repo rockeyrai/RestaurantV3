@@ -17,7 +17,7 @@ const OrderSchema = new Schema({
     }
   }],  
   total_cost: { type: Number, required: true },
-  status: { type: String, enum: ['in_progress', 'completed', 'cancelled'], default: 'in_progress' },
+  status: { type: String, enum: ['in_progress', 'completed', 'pending'], default: 'pending' },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 });

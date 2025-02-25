@@ -144,7 +144,7 @@ function Reserve() {
       const response = await api.post("/tables", reservationData);
 
       if (response.status === 201 || response.status === 200) {
-        alert("Reservation successful!");
+        toast.success("Reservation successfully!");
         // Optionally, refresh the table data or update the state
         setTables((prevTables) =>
           prevTables.map((table) =>
@@ -154,6 +154,7 @@ function Reserve() {
         setSelectedTable(null); // Reset selected table
       } else {
         alert("Failed to make a reservation. Please try again.");
+        toast.error("Failed to make a reservation. Please try again.");
       }
     } catch (error) {
       console.error("Error making reservation:", error);
