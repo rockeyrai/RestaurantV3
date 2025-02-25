@@ -15,10 +15,6 @@ function Reserve() {
   const [maxSeat, setMaxSeat] = useState(null);
   // Fetch table data from the API
 
-  console.log(`stable number ${selectedTable}`);
-  console.log(`max seat  ${maxSeat}`);
-  console.log(`guesss seat ${guests}`);
-  
   useEffect(() => {
     // Get the current time in 12-hour format with AM/PM
     const now = new Date();
@@ -37,14 +33,16 @@ function Reserve() {
     const currentTime = new Date();
     const currentHours = currentTime.getHours();
     const currentMinutes = currentTime.getMinutes();
-    
+
     // Generate 24-hour time slots starting from the current time
     for (let i = 0; i < 24; i++) {
       const hour24 = (currentHours + i) % 24;
       const hour12 = hour24 % 12 || 12; // Convert to 12-hour format
       const minutes = "00"; // Set minutes to 00 for now
       const period = hour24 < 12 ? "AM" : "PM"; // Determine AM or PM
-      const timeSlot = `${hour12.toString().padStart(2, "0")}:${minutes} ${period}`;
+      const timeSlot = `${hour12
+        .toString()
+        .padStart(2, "0")}:${minutes} ${period}`;
 
       options.push(timeSlot);
     }
@@ -63,7 +61,8 @@ function Reserve() {
           id: table.id,
           table_number: table.table_number,
           seats: table.seats,
-          available: table.available === 1, // Convert to boolean
+          available: table.available === 1,
+          reserve_time: table.reserve_time,
         }));
 
         setTables(formattedData);
@@ -196,7 +195,6 @@ function Reserve() {
               />
             </div>
 
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Clock className="inline-block w-4 h-4 mr-2" />
@@ -268,6 +266,11 @@ function Reserve() {
                 >
                   {table.available ? "Available" : "Reserved"}
                 </p>
+                {table.reserve_time && !table.available && (
+                  <p className="text-sm text-gray-600">
+                    Reservation Time: {table.reserve_time}
+                  </p>
+                )}
               </div>
             ))}
           </div>

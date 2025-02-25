@@ -7,16 +7,18 @@ const getTables = async (req, res) => {
   try {
     // SQL Query to fetch table data
     const query = `
-        SELECT 
-            id, 
-            table_number, 
-            seats, 
-            available 
-        FROM Tables
-    `;
+    SELECT 
+        id, 
+        table_number, 
+        seats, 
+        available, 
+        reserve_time
+    FROM Tables
+`;
 
-    // Execute query using the MySQL pool
-    const [rows] = await mysqlPool.query(query);
+// Execute query using the MySQL pool
+const [rows] = await mysqlPool.query(query);
+
 
     // Return fetched rows as JSON
     res.status(200).json(rows);
