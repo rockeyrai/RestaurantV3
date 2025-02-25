@@ -4,7 +4,7 @@ import axios from "axios";
 import MenuFilter from "@/component/MenuFilter";
 import MenuCard from "@/component/MenuCard";
 import { useSelector } from "react-redux";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 function Menu() {
   const [menuItems, setMenuItems] = useState([]);

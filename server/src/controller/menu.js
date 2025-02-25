@@ -6,36 +6,32 @@ SELECT
     m.menu_item_id,
     m.name,
     m.description,
+    m.rating,
     CAST(m.price AS DECIMAL(10, 2)) AS original_price,
     ROUND(
         CASE 
             WHEN o.offer_type = 'percentage' THEN 
-                m.price * (1 - IFNULL(o.discount_percentage, 0) / 100) -- Apply percentage discount
+                m.price * (1 - IFNULL(o.discount_percentage, 0) / 100)
             WHEN o.offer_type = 'fixed_price' THEN 
-                GREATEST(0, m.price - IFNULL(o.discount_percentage, 0)) -- Deduct fixed price discount, ensure no negative value
+                GREATEST(0, m.price - IFNULL(o.discount_percentage, 0))
             ELSE 
-                m.price -- No discount
+                m.price
         END,
         2
     ) AS final_price,
     IFNULL(CAST(o.discount_percentage AS DECIMAL(5, 2)), 0) AS discount_percentage,
     o.start_date AS offer_start_date,
     o.end_date AS offer_end_date,
-    o.offer_type AS offer_type, -- Added to GROUP BY
+    o.offer_type AS offer_type,
     c.name AS category_name,
     CAST(m.availability AS UNSIGNED) AS availability,
-    
-    -- Aggregate unique tag names while filtering out null values
     (SELECT JSON_ARRAYAGG(t.name)
      FROM Tags t
      JOIN Menu_Tags mt ON mt.tag_id = t.tag_id
      WHERE mt.menu_item_id = m.menu_item_id AND t.name IS NOT NULL) AS tags,
-    
-    -- Aggregate unique image URLs while filtering out null values
     (SELECT JSON_ARRAYAGG(mi.image_url)
      FROM Menu_Images mi
      WHERE mi.menu_item_id = m.menu_item_id AND mi.image_url IS NOT NULL) AS image_urls
-
 FROM Menu m
 LEFT JOIN Dynamic_Pricing dp 
     ON m.menu_item_id = dp.menu_item_id
@@ -46,24 +42,18 @@ LEFT JOIN Offers o
     AND NOW() BETWEEN o.start_date AND o.end_date
 LEFT JOIN Categories c 
     ON m.category_id = c.category_id
-LEFT JOIN Menu_Tags mt
-    ON m.menu_item_id = mt.menu_item_id
-LEFT JOIN Tags t
-    ON mt.tag_id = t.tag_id
-LEFT JOIN Menu_Images mi 
-    ON m.menu_item_id = mi.menu_item_id
 GROUP BY 
     m.menu_item_id, 
     m.name, 
     m.description, 
-    m.price, 
-    dp.price, 
+    m.price,
+    m.rating,
     o.discount_percentage, 
-    o.offer_type,   -- Added here
+    o.offer_type, 
     o.start_date, 
     o.end_date, 
-    c.name, 
-    m.availability;
+    c.name;
+
 `;
 
   try {
@@ -74,6 +64,7 @@ GROUP BY
           menu_item_id: row.menu_item_id,
           name: row.name,
           description: row.description,
+          rating:row.rating,
           original_price: row.original_price,
           final_price: row.final_price,
           discount_percentage: row.discount_percentage,
@@ -230,4 +221,47 @@ const fetchTags = async (req, res) => {
   }
 };
 
-module.exports = { fetchMenu, addMenu, fetchCategorues, fetchTags };
+const updateRating = async (req, res) => {
+  console.log("Inside updateRating function");
+  console.log("Request Body:", req.body);
+  const { menu_item_id, rating } = req.body;
+  console.log(`menu_item_id: ${menu_item_id}, rating: ${rating}`);
+
+  // Validate input
+  if (typeof rating !== 'number' || rating < 0 || rating > 5) {
+    return res.status(400).json({ message: "Rating must be between 0 and 5." });
+  }
+
+  try {
+    // Check if menu item exists
+    const checkQuery = 'SELECT * FROM Menu WHERE menu_item_id = ?';
+    const [rows] = await mysqlPool.query(checkQuery, [menu_item_id]);
+    console.log("Menu item check results:", rows);
+
+    if (rows.length === 0) {
+      console.log("Menu item not found.");
+      return res.status(404).json({ message: "Menu item not found." });
+    }
+
+    // Update the rating in the database
+    const updateQuery = `UPDATE Menu SET rating = ? WHERE menu_item_id = ?`;
+    const [updateResults] = await mysqlPool.query(updateQuery, [rating, menu_item_id]);
+
+    console.log("Update query results:", updateResults);
+
+    if (updateResults.affectedRows === 0) {
+      console.log("No rows affected. Menu item might not be found.");
+      return res.status(404).json({ message: "Menu item not found." });
+    }
+
+    // Ensure the response is always sent
+    console.log("Rating updated successfully.");
+    return res.status(200).json({ message: "Rating updated successfully." });
+  } catch (error) {
+    console.error("Error updating rating:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+module.exports = { fetchMenu, addMenu, fetchCategorues, fetchTags, updateRating };
