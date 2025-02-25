@@ -224,44 +224,64 @@ const fetchTags = async (req, res) => {
 const updateRating = async (req, res) => {
   console.log("Inside updateRating function");
   console.log("Request Body:", req.body);
-  const { menu_item_id, rating } = req.body;
-  console.log(`menu_item_id: ${menu_item_id}, rating: ${rating}`);
+  const { menu_item_id, user_id, rating } = req.body;
+  console.log(`menu_item_id: ${menu_item_id}, user_id: ${user_id}, rating: ${rating}`);
 
   // Validate input
-  if (typeof rating !== 'number' || rating < 0 || rating > 5) {
-    return res.status(400).json({ message: "Rating must be between 0 and 5." });
+  if (!menu_item_id || !user_id || typeof rating !== 'number' || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: "Invalid input. Rating must be between 1 and 5." });
   }
 
   try {
     // Check if menu item exists
-    const checkQuery = 'SELECT * FROM Menu WHERE menu_item_id = ?';
-    const [rows] = await mysqlPool.query(checkQuery, [menu_item_id]);
-    console.log("Menu item check results:", rows);
+    const checkMenuQuery = 'SELECT * FROM Menu WHERE menu_item_id = ?';
+    const [menuRows] = await mysqlPool.query(checkMenuQuery, [menu_item_id]);
+    console.log("Menu item check results:", menuRows);
 
-    if (rows.length === 0) {
+    if (menuRows.length === 0) {
       console.log("Menu item not found.");
       return res.status(404).json({ message: "Menu item not found." });
     }
 
-    // Update the rating in the database
-    const updateQuery = `UPDATE Menu SET rating = ? WHERE menu_item_id = ?`;
-    const [updateResults] = await mysqlPool.query(updateQuery, [rating, menu_item_id]);
+    // Insert or update the user's rating
+    const upsertRatingQuery = `
+      INSERT INTO Menu_Item_Ratings (menu_item_id, user_id, rating)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE rating = VALUES(rating), updated_at = CURRENT_TIMESTAMP
+    `;
+    const [upsertResult] = await mysqlPool.query(upsertRatingQuery, [menu_item_id, user_id, rating]);
+    console.log("Upsert query result:", upsertResult);
 
-    console.log("Update query results:", updateResults);
+    // Calculate the new average rating and count for the menu item
+    const calculateRatingQuery = `
+      SELECT AVG(rating) AS avg_rating, COUNT(*) AS total_ratings
+      FROM Menu_Item_Ratings
+      WHERE menu_item_id = ?
+    `;
+    const [ratingStats] = await mysqlPool.query(calculateRatingQuery, [menu_item_id]);
+    const { avg_rating, total_ratings } = ratingStats[0];
+    console.log(`Calculated avg_rating: ${avg_rating}, total_ratings: ${total_ratings}`);
 
-    if (updateResults.affectedRows === 0) {
-      console.log("No rows affected. Menu item might not be found.");
-      return res.status(404).json({ message: "Menu item not found." });
-    }
+    // Update the Menu table with the new average rating
+    const updateMenuQuery = `
+      UPDATE Menu
+      SET rating = ?
+      WHERE menu_item_id = ?
+    `;
+    const [menuUpdateResult] = await mysqlPool.query(updateMenuQuery, [avg_rating, menu_item_id]);
+    console.log("Menu table updated result:", menuUpdateResult);
 
-    // Ensure the response is always sent
-    console.log("Rating updated successfully.");
-    return res.status(200).json({ message: "Rating updated successfully." });
+    return res.status(200).json({
+      message: "Rating updated successfully.",
+      avg_rating,
+      total_ratings,
+    });
   } catch (error) {
     console.error("Error updating rating:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 
 module.exports = { fetchMenu, addMenu, fetchCategorues, fetchTags, updateRating };

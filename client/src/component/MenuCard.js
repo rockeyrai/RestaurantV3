@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Tag, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { api } from "./clientProvider";
+import { useSelector } from "react-redux";
 
 const MenuCard = ({ item }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -10,6 +11,7 @@ const MenuCard = ({ item }) => {
       : ["https://images.unsplash.com/photo-1546069901-ba9599a7e63c"];
   const [hoverRating, setHoverRating] = useState(null);
   const [userRating, setUserRating] = useState(item.rating || 0);
+  const user = useSelector((state) => state.auth.user);
 
   console.log(item);
   const nextImage = () => {
@@ -40,8 +42,9 @@ const MenuCard = ({ item }) => {
   // Inside MenuCard Component
 
   const handleRatingClick = async (menu_item_id, rating) => {
-    setUserRating(rating); // Set the user rating to the clicked rating
-    const ratingData = { menu_item_id, rating }; // Use the rating passed as an argument
+    setUserRating(rating); 
+    const user_id = user.userId
+    const ratingData = { menu_item_id, rating,user_id }; // Use the rating passed as an argument
   
     try {
       const response = await api.put("/rating", ratingData);
