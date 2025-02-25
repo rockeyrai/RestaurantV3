@@ -9,7 +9,8 @@ const Tables = ({ tables }) => {
   // Use effect to update the tables when the parent component's `tables` prop changes
   useEffect(() => {
     setUpdatedTables(tables);
-  }, [tables]); // Runs whenever `tables` prop changes
+  }, [tables]); 
+  // Runs whenever `tables` prop changes
 
   useEffect(() => {
     // Initialize Socket.IO connection
@@ -25,7 +26,6 @@ const Tables = ({ tables }) => {
         )
       );
     });
-
     return () => {
       newSocket.disconnect(); // Cleanup when component unmounts
     };
@@ -40,6 +40,7 @@ const Tables = ({ tables }) => {
         const updatedTable = response.data; // Assuming your API responds with updated table data
 
         // Emit the updated table to all connected clients via Socket.IO
+        console.log(updatedTable)
         if (socket) {
           socket.emit("tableUpdated", updatedTable); // Emit the updated table data
         }

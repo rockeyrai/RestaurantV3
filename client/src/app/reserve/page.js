@@ -4,17 +4,19 @@ import { Calendar, Clock, Users } from "lucide-react";
 import { api } from "@/component/clientProvider";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
+import { toast } from "sonner";
 
 function Reserve() {
   const [date, setDate] = useState(getTodayDate());
-  const [time, setTime] = useState("3:32:PM");
+  const [time, setTime] = useState("");
   const [guests, setGuests] = useState(2);
   const [tables, setTables] = useState([]);
   const user = useSelector((state) => state.auth.user);
   const [selectedTable, setSelectedTable] = useState(null);
   const [maxSeat, setMaxSeat] = useState(null);
+  const [socket, setSocket] = useState(null);
   // Fetch table data from the API
-
+console.log(JSON.stringify(tables))
   useEffect(() => {
     // Get the current time in 12-hour format with AM/PM
     const now = new Date();
@@ -50,6 +52,39 @@ function Reserve() {
   };
 
   useEffect(() => {
+    const newSocket = io("http://localhost:8000");
+    setSocket(newSocket);
+  
+    newSocket.on("tableUpdated", (updatedTable) => {
+      alert(JSON.stringify(updatedTable));
+      setTables((prevTables) => {
+        console.log("Previous tables:", prevTables); // Log the previous state (tables)
+        console.log("Updated table:", updatedTable); // Log the updated table data
+        
+        return prevTables.map((table) => {
+          console.log("Checking table:", table); // Log each table as we iterate
+          
+          if (table.id === updatedTable.id) {
+            console.log("Table to be updated:", table); // Log the table to be updated
+            return { ...table, ...updatedTable }; // Merge the updated table with the existing table
+          }
+          if (table.id === updatedTable.table_id) {
+            console.log("Table to be updated:", table); // Log the table to be updated
+            return { ...table, ...updatedTable }; // Merge the updated table with the existing table
+          }
+          
+          return table; // Return the table unmodified if the ids don't match
+        });
+      });
+    });
+  
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+  
+
+  useEffect(() => {
     // Fetch initial table data from the API
     const fetchTables = async () => {
       try {
@@ -63,6 +98,7 @@ function Reserve() {
           seats: table.seats,
           available: table.available === 1,
           reserve_time: table.reserve_time,
+          no_of_people: table.no_of_people,
         }));
 
         setTables(formattedData);
@@ -72,35 +108,6 @@ function Reserve() {
     };
 
     fetchTables();
-
-    // Initialize Socket.IO connection
-    const socket = io(`${process.env.NEXT_PUBLIC_FRONTEND_API}`); // Replace with your server URL
-
-    // Listen for table updates
-    socket.on("tableUpdated", (updatedTable) => {
-      console.log("Table updated:", updatedTable);
-      setTables((prevTables) =>
-        prevTables.map((table) =>
-          table.id === updatedTable.id // Ensure we're comparing by id
-            ? {
-                ...table,
-                available: updatedTable.available === 1, // Ensure boolean format
-              }
-            : table
-        )
-      );
-    });
-
-    // Listen for new table reservations
-    socket.on("tableReserved", (newTable) => {
-      console.log("New table reserved:", newTable);
-      setTables((prevTables) => [...prevTables, newTable]);
-    });
-
-    // Cleanup the Socket.IO connection on unmount
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   function getTodayDate() {
@@ -111,6 +118,20 @@ function Reserve() {
   const handleTableSeceletion = (tabaleID, max_seat) => {
     setSelectedTable(tabaleID);
     setMaxSeat(max_seat);
+  };
+
+  const convertTo24HourFormat = (time12h) => {
+    const [time, modifier] = time12h.split(" "); // Split time and AM/PM
+    let [hours, minutes] = time.split(":");
+
+    if (modifier === "PM" && hours !== "12") {
+      hours = parseInt(hours, 10) + 12;
+    }
+    if (modifier === "AM" && hours === "12") {
+      hours = "00";
+    }
+
+    return `${hours}:${minutes}:00`; // Add seconds as 00
   };
 
   const handleReservation = async () => {
@@ -133,7 +154,7 @@ function Reserve() {
       table_id: selectedTable,
       user_id: user.userId,
       order_id: null, // Assuming order_id is optional
-      reserve_time: time,
+      reserve_time: convertTo24HourFormat(time),
       available: false, // Mark the table as unavailable after reservation
       reserve_date: date,
       no_of_people: guests,
@@ -145,11 +166,12 @@ function Reserve() {
       if (response.status === 201 || response.status === 200) {
         toast.success("Reservation successfully!");
         // Optionally, refresh the table data or update the state
-        setTables((prevTables) =>
-          prevTables.map((table) =>
-            table.id === selectedTable ? { ...table, available: false } : table
-          )
-        );
+        const updatedTable = response.data; // Assuming your API responds with updated table data
+        // Emit the updated table to all connected clients via Socket.IO
+        if (socket) {
+          socket.emit("tableUpdated", updatedTable); // Emit the updated table data
+        }
+
         setSelectedTable(null); // Reset selected table
       } else {
         alert("Failed to make a reservation. Please try again.");
@@ -258,7 +280,14 @@ function Reserve() {
                 }
               >
                 <h3 className="font-medium">Table {table.table_number}</h3>
-                <p className="text-sm text-gray-600">{table.seats} Seats</p>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-600">{table.seats} Seats</p>
+                  {table.reserve_time && (
+                    <p className="text-sm text-gray-600">
+                      {table.no_of_people} Guset
+                    </p>
+                  )}
+                </div>
                 <p
                   className={`text-sm ${
                     table.available ? "text-green-600" : "text-red-600"
