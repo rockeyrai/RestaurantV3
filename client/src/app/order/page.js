@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { api } from "@/component/clientProvider";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
+import { toast } from "sonner";
 
 const Order = () => {
   const user = useSelector((state) => state.auth.user);
@@ -11,28 +12,61 @@ const Order = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [payableamount, setPayableamount] = useState(null);
+  const [payId, setPayId] = useState([]);
+  const [socket, setSocket] = useState(null);
 
 
+  console.log(loading)
   useEffect(() => {
     // Initialize Socket.IO connection
     const newSocket = io("http://localhost:8000"); // Replace with your server URL
-
-    // Listen for real-time updates
-    newSocket.on("orderStatusUpdated", (updatedOrder) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.order_id === updatedOrder._id
-            ? { ...order, status: updatedOrder.status }
-            : order
-        )
-      );
-    });
-
+    setSocket(newSocket);
+  
+    // Listen for real-time updates and call fetchOrder with proper arguments
+    newSocket.on("orderStatusUpdated", () => {
+      if (user?.userId) {
+        const fetchOrder = async () => {
+          try {
+            const response = await api.get(`/customer/orders/${user.userId}`);
+            const orderData = response.data.orders;
+    
+            // Log and debug the response data
+            console.log(orderData);
+    
+            // Extract the order_ids of the completed orders
+            const completedOrders = orderData.filter((order) => order.status === "completed");
+            const completedOrderIds = completedOrders.map((order) => order.order_id);
+    
+            // Set the state for order_ids
+            setPayId(completedOrderIds);
+    
+            // Calculate the total payable amount by summing up all completed order totals
+            const totalPayable = orderData
+              .filter((order) => order.status === "completed") // Filter only orders with 'completed' status
+              .reduce((total, order) => total + parseFloat(order.total), 0) // Sum up the total of completed orders
+              .toFixed(2); // Format the result to two decimal places
+    
+            setPayableamount(totalPayable);
+            setOrders(orderData);
+          } catch (err) {
+            setError("Failed to fetch orders. Please try again later.");
+            console.error("API error:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+    
+        fetchOrder();
+      } else {
+        console.log("User ID is not available.");
+        setLoading(false); // stop loading if no user
+      }
+    })
     return () => {
       newSocket.disconnect(); // Cleanup socket connection on component unmount
     };
-  }, []);
-
+  }, [user?.userId]); // Add user.userId as dependency if needed
+  
   useEffect(() => {
     // Ensure that userId is available
     if (user?.userId) {
@@ -40,16 +74,23 @@ const Order = () => {
         try {
           const response = await api.get(`/customer/orders/${user.userId}`);
           const orderData = response.data.orders;
-
+  
           // Log and debug the response data
           console.log(orderData);
-
+  
+          // Extract the order_ids of the completed orders
+          const completedOrders = orderData.filter((order) => order.status === "completed");
+          const completedOrderIds = completedOrders.map((order) => order.order_id);
+  
+          // Set the state for order_ids
+          setPayId(completedOrderIds);
+  
           // Calculate the total payable amount by summing up all completed order totals
           const totalPayable = orderData
             .filter((order) => order.status === "completed") // Filter only orders with 'completed' status
             .reduce((total, order) => total + parseFloat(order.total), 0) // Sum up the total of completed orders
             .toFixed(2); // Format the result to two decimal places
-
+  
           setPayableamount(totalPayable);
           setOrders(orderData);
         } catch (err) {
@@ -59,13 +100,40 @@ const Order = () => {
           setLoading(false);
         }
       };
-
+  
       fetchOrder();
     } else {
       console.log("User ID is not available.");
       setLoading(false); // stop loading if no user
     }
   }, [user?.userId]); // Only run the effect when user.userId changes
+  
+
+  const handleDeleteOrders = async () => {
+    try {
+      if (payId.length <= 0) {
+        toast.error("Order are not Complete");
+        return;
+      }
+      debugger;
+      const response = await api.delete("/deleteorders", {
+        data: { orderIds: payId }, // Sending the payId array to the server
+      });
+      setPayableamount("");
+      if (socket) {
+        socket.emit("tableUpdated"); // Emit the updated table data
+      }
+      console.log(response.data.message);
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => !payId.includes(order.order_id))
+      );
+      toast.success("Order payed successfully!");
+    } catch (error) {
+      console.error("Failed to delete orders:", error);
+      toast.error("Fail to pay orders!");
+    }
+  };
+
 
   if (loading) {
     <div>Loading ....</div>;
@@ -154,7 +222,7 @@ const Order = () => {
             <h1 className="text-xl font-semibold">Total Amount</h1>
             <p>{`$${payableamount}`}</p>
           </div>
-          <Button>Check Out</Button>
+          <Button onClick={() => handleDeleteOrders()}>Check Out</Button>
         </div>
       </div>
     </div>

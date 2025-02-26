@@ -227,4 +227,30 @@ const updateOrder = async (req, res, io) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-module.exports = { addOrder, getAllOrders ,getCustomerOrders,updateOrder };
+
+
+const deleteCompletedOrders = async (req, res) => {
+  const { orderIds } = req.body; // Get order_ids from the request body
+
+  if (!Array.isArray(orderIds) || orderIds.length === 0) {
+    return res.status(400).json({ error: "Invalid order IDs provided" });
+  }
+
+  try {
+    // Delete orders from MongoDB using the order_ids
+    const result = await Order.deleteMany({ _id: { $in: orderIds } });
+
+    if (result.deletedCount > 0) {
+      res.status(200).json({ success: true, message: `${result.deletedCount} orders deleted successfully` });
+    } else {
+      res.status(404).json({ success: false, message: "No matching orders found to delete" });
+    }
+  } catch (error) {
+    console.error("Error deleting orders:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+module.exports = { addOrder, getAllOrders ,getCustomerOrders,updateOrder, deleteCompletedOrders };
