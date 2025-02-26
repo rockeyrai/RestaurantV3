@@ -192,9 +192,46 @@ const toggleTableAvailability = async (req, res, io) => {
   }
 };
 
+const createTable = async (req, res) => {
+  try {
+    // Destructure values from request body
+    const { table_number, seats, available } = req.body;
+
+    // Ensure all required values are provided
+    if (!table_number || !seats || available === undefined) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Prepare the SQL query
+    const query = `
+      INSERT INTO Tables (table_number, seats, available)
+      VALUES (?, ?, ?)
+    `;
+    const values = [table_number, seats, available];
+
+    // Execute the query using async/await
+    const [results] = await mysqlPool.query(query, values);
+
+    // Respond with success message and table data
+    res.status(201).json({
+      message: 'Table added successfully',
+      table: {
+        table_number,
+        seats,
+        available,
+      },
+    });
+  } catch (err) {
+    console.error('Error adding table:', err);
+    return res.status(500).json({ message: 'Error adding table', error: err.message });
+  }
+};
+
+
 module.exports = {
   getTables,
   saveTableReservation,
   fetchTableAdmin,
   toggleTableAvailability,
+  createTable
 };

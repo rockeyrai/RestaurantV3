@@ -66,10 +66,12 @@ function Admin () {
         const formattedData = response.data.map(item => ({
           id: item.menu_item_id,
           name: item.name,
-          price: parseFloat(item.final_price),
+          final_price: parseFloat(item.final_price),
+          original_price : parseFloat(item.original_price),
           category: item.category_name,
           available: Boolean(item.availability),
-          discount: parseFloat(item.discount_percentage),
+          discount_percentage : parseFloat(item.discount_percentage),
+
         }));
         setMenuItems(formattedData);
       } catch (err) {

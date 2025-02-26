@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Select from 'react-select';
+import Select from "react-select";
 
 const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -8,7 +8,7 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  console.log(menuItems);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -43,7 +43,7 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -51,8 +51,8 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
     const fetchTagsCategories = async () => {
       try {
         const [tagsResponse, categoriesResponse] = await Promise.all([
-          api.get('/tags'),
-          api.get("/categories")
+          api.get("/tags"),
+          api.get("/categories"),
         ]);
         const tagsOptions = tagsResponse.data.map((tag) => ({
           value: tag.tag_id,
@@ -89,8 +89,8 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
         image_urls: formData.image_urls.split(",").map((url) => url.trim()),
       };
 
-      console.log(payload)
-      const response = await api.post('/menu', payload);
+      console.log(payload);
+      const response = await api.post("/menu", payload);
 
       setMessage(response.data.message);
       setFormData({
@@ -157,32 +157,35 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
 
             {/* Categories Multi-select */}
             <div>
-          <label className="block text-sm font-medium text-gray-700">Categories</label>
-          <Select
-            isMulti
-            options={categories} // Options fetched from the API
-            value={formData.categories} // Selected tags
-            onChange={handleCategoriesChange} // Handle tag selection
-            placeholder="Select cateories..."
-            className="react-select-container"
-            classNamePrefix="react-select"
-          />
-        </div>
+              <label className="block text-sm font-medium text-gray-700">
+                Categories
+              </label>
+              <Select
+                isMulti
+                options={categories} // Options fetched from the API
+                value={formData.categories} // Selected tags
+                onChange={handleCategoriesChange} // Handle tag selection
+                placeholder="Select cateories..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
 
             {/* Tags Multi-select */}
             <div>
-          <label className="block text-sm font-medium text-gray-700">Tags</label>
-          <Select
-            isMulti
-            options={tags} // Options fetched from the API
-            value={formData.tags} // Selected tags
-            onChange={handleTagsChange} // Handle tag selection
-            placeholder="Select tags..."
-            className="react-select-container"
-            classNamePrefix="react-select"
-          />
-        </div>
-
+              <label className="block text-sm font-medium text-gray-700">
+                Tags
+              </label>
+              <Select
+                isMulti
+                options={tags} // Options fetched from the API
+                value={formData.tags} // Selected tags
+                onChange={handleTagsChange} // Handle tag selection
+                placeholder="Select tags..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+              />
+            </div>
 
             <div className="flex items-center">
               <input
@@ -221,12 +224,24 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-50">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Final Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Category
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Final Price
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Discount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -234,12 +249,28 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
               <tr key={item.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
-                <td className="px-6 py-4 whitespace-nowrap">${item.price.toFixed(2)}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.discount}%</td>
+
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {item.final_price}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {item.discount_percentage > 0 && (
+                    <div className=" bg-red-400 text-white px-2 py-1 rounded-md">
+                      {(item.original_price - item.discount_percentage).toFixed(
+                        2
+                      ) == item.final_price
+                        ? `Rs.${Number(item.discount_percentage)} OFF`
+                        : `${Number(item.discount_percentage)}% OFF`}
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      item.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      item.available
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {item.available ? "Available" : "Unavailable"}
