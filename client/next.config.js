@@ -1,6 +1,6 @@
-module.exports = {
-  experimental: {
-    turbopack: false,
-  },
-};
+// module.exports = {
+//   experimental: {
+//     turbopack: false,
+//   },
+// };
 

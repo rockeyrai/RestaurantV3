@@ -93,7 +93,6 @@ const addOrder = async (req, res) => {
 };
 
 
-// API for Admin to Get All Orders
 // API for Admin to Get All Orders in the Desired Format
 const getAllOrders = async (req, res) => {
   try {
@@ -117,6 +116,7 @@ const getAllOrders = async (req, res) => {
             return {
               name: menuResult[0].name,
               quantity: item.quantity,
+              order_id: order._id, // Use `order._id` here
               price: parseFloat(menuResult[0].price) * item.quantity,
             };
           })
@@ -124,11 +124,15 @@ const getAllOrders = async (req, res) => {
 
         return {
           id: index + 1, // Start from 1 and increment
+          order_id: order._id, // Use `order._id` for unique identifier
           table: order.table_id,
           items: transformedItems,
           total: order.total_cost,
           status: order.status,
-          timestamp: new Date(order.created_at).toISOString().slice(0, 19).replace("T", " "), // Format timestamp
+          timestamp: new Date(order.created_at)
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " "), // Format timestamp
         };
       })
     );
@@ -139,6 +143,7 @@ const getAllOrders = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // API for Customers to Get Their Orders
 const getCustomerOrders = async (req, res) => {
@@ -172,6 +177,7 @@ const getCustomerOrders = async (req, res) => {
             return {
               name: menuResult[0].name,
               quantity: item.quantity,
+              order_id: order._id, // Use `order._id` here
               price: parseFloat(menuResult[0].price) * item.quantity,
             };
           })
@@ -180,6 +186,7 @@ const getCustomerOrders = async (req, res) => {
         return {
           id: index + 1, // Start from 1 and increment
           table: order.table_id,
+          order_id: order._id, // Use `order._id` for unique identifier
           items: transformedItems,
           total: order.total_cost,
           status: order.status,
@@ -195,6 +202,29 @@ const getCustomerOrders = async (req, res) => {
   }
 };
 
+const updateOrder = async (req, res, io) => {
+  try {
+    const { orderId, newStatus } = req.body;
 
+    // Update the status in MongoDB
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status: newStatus },
+      { new: true }
+    );
 
-module.exports = { addOrder, getAllOrders ,getCustomerOrders };
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // Emit the updated order via WebSocket
+    io.emit("orderStatusUpdated", updatedOrder);
+
+    // Respond with the updated order data
+    res.status(200).json({ success: true, order: updatedOrder });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+module.exports = { addOrder, getAllOrders ,getCustomerOrders,updateOrder };

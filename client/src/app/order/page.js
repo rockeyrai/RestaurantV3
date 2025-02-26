@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { api } from "@/component/clientProvider";
 import { Button } from "@/components/ui/button";
+import { io } from "socket.io-client";
 
 const Order = () => {
   const user = useSelector((state) => state.auth.user);
@@ -10,6 +11,27 @@ const Order = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [payableamount, setPayableamount] = useState(null);
+
+
+  useEffect(() => {
+    // Initialize Socket.IO connection
+    const newSocket = io("http://localhost:8000"); // Replace with your server URL
+
+    // Listen for real-time updates
+    newSocket.on("orderStatusUpdated", (updatedOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.order_id === updatedOrder._id
+            ? { ...order, status: updatedOrder.status }
+            : order
+        )
+      );
+    });
+
+    return () => {
+      newSocket.disconnect(); // Cleanup socket connection on component unmount
+    };
+  }, []);
 
   useEffect(() => {
     // Ensure that userId is available
