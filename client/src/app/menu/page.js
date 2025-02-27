@@ -86,7 +86,6 @@ function Menu() {
       const table_id = 4;
       const orderData = {
         user_id,
-        table_id,
         items: selectedItems.map(({ menu_item_id, quantity }) => ({
           menu_item_id,
           quantity,
@@ -95,7 +94,8 @@ function Menu() {
       };
 
       const response = await api.post("/orders", orderData);
-      toast.success("Order placed successfully!");
+      if ((response.status = 200 || 201))
+        toast.success("Order placed successfully!");
       setSelectedItems([]);
       setTotalCost(0);
     } catch (err) {
@@ -159,7 +159,7 @@ function Menu() {
           onSearchChange={setSearchTerm}
         />
 
-        <div className="curser-pointer grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="curser-pointer grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredItems.map((item) => (
             <div
               className="cursor-pointer"
@@ -232,7 +232,7 @@ function Menu() {
               ))}
             </tbody>
           </table>
-          <h3 className="font-bold mt-4">Total: ${totalCost.toFixed(2)}</h3>
+          <h3 className="font-bold mt-4">Total: Rs. {totalCost.toFixed(2)}</h3>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
             onClick={handleSubmitOrder}

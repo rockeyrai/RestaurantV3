@@ -2,7 +2,11 @@ const { mysqlPool } = require("../database/mysql");
 const Order = require("../model/order"); // Use the correct model name
 
 const addOrder = async (req, res) => {
-  const { user_id, table_id, items, total_cost } = req.body;
+  const { user_id, items, total_cost } = req.body;
+
+  const [rows] = await mysqlPool.query('SELECT id FROM Tables WHERE user_id = ?', [user_id]);
+  const table_id = rows.length > 0 ? rows[0].id : null; // Safely handle if no rows are returned
+  
 
   if (!user_id || !items || !total_cost) {
     return res.status(400).json({ error: 'user_id, items, and total_cost are required' });

@@ -42,13 +42,13 @@ const MenuCard = ({ item }) => {
   // Inside MenuCard Component
 
   const handleRatingClick = async (menu_item_id, rating) => {
-    setUserRating(rating); 
-    const user_id = user.userId
-    const ratingData = { menu_item_id, rating,user_id }; // Use the rating passed as an argument
-  
+    setUserRating(rating);
+    const user_id = user.userId;
+    const ratingData = { menu_item_id, rating, user_id }; // Use the rating passed as an argument
+
     try {
       const response = await api.put("/rating", ratingData);
-  
+
       // No need to call .json() with axios
       if (response.status === 200) {
         console.log("Rating updated successfully!");
@@ -59,8 +59,6 @@ const MenuCard = ({ item }) => {
       console.error("Error updating rating:", error);
     }
   };
-  
-  
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -97,7 +95,7 @@ const MenuCard = ({ item }) => {
           <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md">
             {(item.original_price - item.discount_percentage).toFixed(2) ==
             item.final_price
-              ? `Rs.${Number(item.discount_percentage)} OFF`
+              ? `Rs. ${Number(item.discount_percentage)} OFF`
               : `${Number(item.discount_percentage)}% OFF`}
           </div>
         )}
@@ -111,13 +109,13 @@ const MenuCard = ({ item }) => {
                 <span className="text-lg font-bold text-green-600">
                   {typeof item.final_price === "number" ||
                   !isNaN(parseFloat(item.final_price))
-                    ? `Rs${parseFloat(item.final_price).toFixed(2)}`
+                    ? `Rs. ${parseFloat(item.final_price).toFixed(2)}`
                     : "N/A"}
                 </span>
                 <span className="text-sm text-gray-500 line-through ml-2">
                   {typeof item.original_price === "number" ||
                   !isNaN(parseFloat(item.original_price))
-                    ? `Rs${parseFloat(item.original_price).toFixed(2)}`
+                    ? `Rs. ${parseFloat(item.original_price).toFixed(2)}`
                     : "N/A"}
                 </span>
               </>
@@ -125,13 +123,13 @@ const MenuCard = ({ item }) => {
               <span className="text-lg font-bold text-green-600">
                 {typeof item.final_price === "number" ||
                 !isNaN(parseFloat(item.final_price))
-                  ? `Rs${parseFloat(item.final_price).toFixed(2)}`
+                  ? `Rs. ${parseFloat(item.final_price).toFixed(2)}`
                   : "N/A"}
               </span>
             )}
           </div>
         </div>
-        <p className="text-gray-600 text-sm mb-4">{item.description}</p>
+        {/* <p className="text-gray-600 text-sm mb-4">{item.description}</p> */}
         {item.tags && item.tags.length > 0 && (
           <div className="flex flex-wrap gap justify-between mb-3">
             <div>
@@ -148,23 +146,22 @@ const MenuCard = ({ item }) => {
             <div className="flex items-center mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star
-  key={i}
-  className={`h-4 w-4 cursor-pointer ${
-    hoverRating !== null
-      ? i < hoverRating
-        ? "text-yellow-400 fill-current"
-        : "text-gray-300"
-      : i < Math.floor(userRating)
-      ? "text-yellow-400 fill-current"
-      : "text-gray-300"
-  }`}
-  onClick={() => handleRatingClick(item.menu_item_id, i + 1)} // Pass the rating value
-  onMouseEnter={() => handleMouseEnter(i + 1)}
-  onMouseLeave={handleMouseLeave}
-/>
-
+                  key={i}
+                  className={`h-4 w-4 cursor-pointer ${
+                    hoverRating !== null
+                      ? i < hoverRating
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                      : i < Math.floor(userRating)
+                      ? "text-yellow-400 fill-current"
+                      : "text-gray-300"
+                  }`}
+                  onClick={() => handleRatingClick(item.menu_item_id, i + 1)} // Pass the rating value
+                  onMouseEnter={() => handleMouseEnter(i + 1)}
+                  onMouseLeave={handleMouseLeave}
+                />
               ))}
-              <span className="ml-2 text-sm text-gray-600">({userRating})</span>
+              {/* <span className="ml-2 text-sm text-gray-600">({userRating})</span> */}
             </div>
           </div>
         )}
@@ -172,7 +169,7 @@ const MenuCard = ({ item }) => {
           <span className="text-blue-600">{item.category_name}</span>
           {item.discount_percentage > 0 && (
             <div className="text-xs">
-              Offer valid: {formatDate(item.offer_start_date)} -{" "}
+              Offer: {formatDate(item.offer_start_date)} -{" "}
               {formatDate(item.offer_end_date)}
             </div>
           )}

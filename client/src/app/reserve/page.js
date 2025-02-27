@@ -56,7 +56,6 @@ console.log(JSON.stringify(tables))
     setSocket(newSocket);
   
     newSocket.on("tableUpdated", (updatedTable) => {
-      alert(JSON.stringify(updatedTable));
       setTables((prevTables) => {
         console.log("Previous tables:", prevTables); // Log the previous state (tables)
         console.log("Updated table:", updatedTable); // Log the updated table data
