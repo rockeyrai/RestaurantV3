@@ -75,7 +75,7 @@ Below are the primary dependencies used in this project:
     DB_USER=root
     DB_PASSWORD='*#$(req)405R@i'
     DB_NAME=restaurant3
-    JWT_SECRET=9803520300dfadgfsa
+    JWT_SECRET=98030300dfadgfsa
     FRONTEND_URL=http://localhost:3000
     NODE_ENV=development
    ```
