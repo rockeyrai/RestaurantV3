@@ -69,6 +69,7 @@ Below are the primary dependencies used in this project:
 
 ### Setup
 
+####Backend
 1. Install  dependencies:
    ```bash
    cd server
@@ -105,7 +106,138 @@ Below are the primary dependencies used in this project:
    ```bash
    npm run dev
    ```
+   
+#### Database
 
+##### Past this in your SQL database. Remember to put the Categories and Tags before adding Food Menu.
+
+```bash
+-- Users Table
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('customer', 'admin') DEFAULT 'customer',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Categories Table (with parent category for subcategories)
+CREATE TABLE Categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    parent_category_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_category_id) REFERENCES Categories(category_id)
+);
+
+CREATE TABLE Menu_Item_Ratings (
+    rating_id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_item_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating DECIMAL(2,1) NOT NULL CHECK (rating BETWEEN 1.0 AND 5.0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (menu_item_id) REFERENCES Menu(menu_item_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    UNIQUE (menu_item_id, user_id) -- Ensures a user can only rate a menu item once
+);
+
+-- Menu Table (including a dynamic pricing mechanism)
+CREATE TABLE Menu (
+    menu_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    availability BOOLEAN DEFAULT TRUE,
+    rating DECIMAL(2,1) DEFAULT 0 CHECK (rating <= 5.0),
+    category_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES Categories(category_id)
+);
+
+-- Menu Images Table (for multiple images per menu item)
+CREATE TABLE Menu_Images (
+    image_id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_item_id INT,
+    image_url VARCHAR(255),
+    FOREIGN KEY (menu_item_id) REFERENCES Menu(menu_item_id)
+);
+
+-- Tags Table (for item categorization like 'vegan', 'spicy', etc.)
+CREATE TABLE Tags (
+    tag_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Menu Tags Table (many-to-many relationship between menu items and tags)
+CREATE TABLE Menu_Tags (
+    menu_item_id INT,
+    tag_id INT,
+    FOREIGN KEY (menu_item_id) REFERENCES Menu(menu_item_id),
+    FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
+);
+
+-- Offers Table (managing discounts)
+CREATE TABLE Offers (
+    offer_id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_item_id INT,
+    discount_percentage DECIMAL(5, 2),
+    min_order_value DECIMAL(10, 2) DEFAULT 0.00,
+    offer_type ENUM('percentage', 'fixed_price'),
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (menu_item_id) REFERENCES Menu(menu_item_id)
+);
+
+-- Dynamic Pricing Table (for price adjustments based on time)
+CREATE TABLE Dynamic_Pricing (
+    pricing_id INT AUTO_INCREMENT PRIMARY KEY,
+    menu_item_id INT,
+    price DECIMAL(10, 2) NOT NULL,
+    start_time TIME,
+    end_time TIME,
+    days_of_week SET('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'),
+    FOREIGN KEY (menu_item_id) REFERENCES Menu(menu_item_id)
+);
+
+-- Staff Table (staff roles and details)
+CREATE TABLE Staff (
+    staff_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone_number VARCHAR(15),
+    role ENUM('manager', 'chef', 'waiter', 'cashier') DEFAULT 'waiter',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Staff Schedule Table (staff shift schedules)
+CREATE TABLE Staff_Schedule (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT,
+    shift_start DATETIME,
+    shift_end DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (staff_id) REFERENCES Staff(staff_id)
+);
+
+-- Tables Table (managing restaurant tables)
+CREATE TABLE Tables (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_number INT NOT NULL UNIQUE,
+    seats INT NOT NULL,
+    available BOOLEAN DEFAULT TRUE,
+    order_id VARCHAR(24),
+    user_id INT NULL, -- Newly added column,
+    reserve_time TIME NULL,
+    reserve_date DATE NULL,
+    no_of_people INT NULL;
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) -- Foreign key constraint
+);
+
+```
 ---
 
 ## Contribution
