@@ -1,5 +1,5 @@
 # Restaurant Management System
-
+![Application Screenshot](./assets/demo.png)
 ## Introduction
 The **Restaurant Management System** is a robust web application designed to streamline restaurant operations. From managing orders, reservations, and menus to handling staff and seating arrangements, this system provides a comprehensive solution for restaurant owners and managers.
 
@@ -8,8 +8,15 @@ Built with the latest technologies, this application ensures performance, scalab
 ---
 
 ## Project Preview
-![Application Screenshot](https://via.placeholder.com/800x400.png?text=Restaurant+Management+System)
-> Replace the placeholder image URL with a screenshot of your application.
+| ![Demo 1](./assets/demo1.png) | ![Demo 2](./assets/demo2.png) | ![Demo 3](./assets/demo3.png) | ![Demo 4](./assets/demo4.png) |
+|--------------------------------|--------------------------------|--------------------------------|--------------------------------|
+| Demo 1                         | Demo 2                         | Demo 3                         | Demo 4                         |
+
+| ![Demo 5](./assets/demo5.png) | ![Demo 6](./assets/demo6.png) | ![Demo 7](./assets/demo7.png) | ![Demo 8](./assets/demo8.png) |
+|--------------------------------|--------------------------------|--------------------------------|--------------------------------|
+| Demo 5                         | Demo 6                         | Demo 7                         | Demo 8                         |
+
+
 
 ---
 
@@ -114,5 +121,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Contact
 For any inquiries or support, please contact:
 - **Name**: Rockey Chamling Rai
-- **Email**: [your-email@example.com](mailto:rockeyrai234@gamil.com)
-- **LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/rockey-rai-669310305/)
+- **Email**: rockeyrai234@gamil.com
+- **LinkedIn**: [ LinkedIn Profile](https://www.linkedin.com/in/rockey-rai-669310305/)
