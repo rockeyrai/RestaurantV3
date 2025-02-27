@@ -36,7 +36,8 @@ function Admin () {
   });
 
   useEffect(()=>{
-    if(user.role !== "admin"){
+    const  checkUser = user || 0
+    if(checkUser===0){
       router.push("/")
     }else{
       fetchMenu()
@@ -240,7 +241,7 @@ function Admin () {
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md">
+      <div className="w-40 lg:w-64 bg-white shadow-md">
         <nav className="mt-6">
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${

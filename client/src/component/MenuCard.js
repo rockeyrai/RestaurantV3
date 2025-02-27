@@ -132,11 +132,11 @@ const MenuCard = ({ item }) => {
         {/* <p className="text-gray-600 text-sm mb-4">{item.description}</p> */}
         {item.tags && item.tags.length > 0 && (
           <div className="flex flex-wrap gap justify-between mb-3">
-            <div>
+            <div className="flex gap-2" >
               {item.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-600"
+                  className="inline-flex  items-center bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-600"
                 >
                   <Tag className="w-3 h-3 mr-1" />
                   {tag}

@@ -30,6 +30,7 @@ function Menu() {
         const response = await api.get("/menu");
         const response1 = await api.get("/categories");
         setMenuItems(response.data);
+        console.log(response.data);
         setCategories(response1.data);
       } catch (err) {
         setError("Failed to fetch menu items. Please try again later.");
@@ -80,10 +81,13 @@ function Menu() {
       setError("Please add items to your order.");
       return;
     }
-
     try {
-      const user_id = user.userId; // Replace with the actual user ID from your application
-      const table_id = 4;
+      const user_id = user?.userId|| null
+      
+      if (user_id == null){
+        toast.error("Failed to place the order. Please Login");
+        return
+      }
       const orderData = {
         user_id,
         items: selectedItems.map(({ menu_item_id, quantity }) => ({
@@ -94,10 +98,11 @@ function Menu() {
       };
 
       const response = await api.post("/orders", orderData);
-      if ((response.status = 200 || 201))
+      if ((response.status = 200 || 201)) {
         toast.success("Order placed successfully!");
-      setSelectedItems([]);
-      setTotalCost(0);
+        setSelectedItems([]);
+        setTotalCost(0);
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to place the order. Please try again.");

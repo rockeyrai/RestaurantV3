@@ -1,5 +1,5 @@
 const { mysqlPool } = require("../database/mysql");
-
+const Order = require("../model/order"); // Use the correct model name
 /**
  * Fetch all tables from the database.
  */
@@ -119,7 +119,7 @@ const fetchTableAdmin = async (req, res) => {
 const toggleTableAvailability = async (req, res, io) => {
   const { tableId } = req.params;
   const connection = await mysqlPool.getConnection(); // Get a connection from the pool
-
+  console.log(`tabled id ${tableId}`)
   try {
     // Start the transaction
     await connection.beginTransaction();
@@ -156,11 +156,15 @@ const toggleTableAvailability = async (req, res, io) => {
           WHERE id = ?
         `;
         await connection.query(deleteReservationQuery, [tableId]);
-
+console.log(`order id ${order_id}`)
         // If there's an order, delete the order related to the table
         if (order_id) {
-          const deleteOrderQuery = `DELETE FROM Orders WHERE id = ?`;
-          await connection.query(deleteOrderQuery, [order_id]);
+          const result = await Order.deleteOne({ _id: order_id });
+          if (result.deletedCount === 1) {
+            console.log("Successfully deleted the order.");
+          } else {
+            console.log("No order found with the given ID.");
+          }
         }
       }
 

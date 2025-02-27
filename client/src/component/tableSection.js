@@ -196,8 +196,8 @@ const Tables = ({ tables }) => {
                 onClick={() => handleToggleAvailability(table.id)}
                 className={`mt-4 px-4 py-2 rounded-md text-white ${
                   table.available
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-green-500 hover:bg-green-600"
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-red-500 hover:bg-red-600" 
                 }`}
               >
                 {table.available ? "Mark as Occupied" : "Mark as Available"}
