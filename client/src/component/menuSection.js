@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
 
-const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
+const CoustomeMenu = ({ menuItems, toggleMenuItemAvailability }) => {
+  console.log(`menu section dfata ${menuItems}`);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [tags, setTags] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(menuItems);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -225,6 +225,9 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
           <thead>
             <tr className="bg-gray-50">
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                ID
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -247,6 +250,7 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {menuItems.map((item) => (
               <tr key={item.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{item.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
 
@@ -297,4 +301,4 @@ const Menu = ({ menuItems = [], toggleMenuItemAvailability }) => {
   );
 };
 
-export default Menu;
+export default CoustomeMenu;

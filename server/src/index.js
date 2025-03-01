@@ -7,6 +7,7 @@ const menuRouter = require("./router/menu");
 const tableRouter = require("./router/table");
 const employeeRouter = require("./router/employee");
 const orderRouter = require("./router/order");
+const extraRouter = require("./router/extra");
 const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
@@ -53,6 +54,7 @@ io.on("connection", (socket) => {
 
 app.use(userRouter);
 app.use(menuRouter);
+app.use(extraRouter);
 app.use(tableRouter(io));
 app.use(employeeRouter);
 app.use(orderRouter(io));

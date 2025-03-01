@@ -5,6 +5,7 @@ import MenuFilter from "@/component/MenuFilter";
 import MenuCard from "@/component/MenuCard";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import { io } from "socket.io-client";
 
 function Menu() {
   const [menuItems, setMenuItems] = useState([]);
@@ -96,12 +97,14 @@ function Menu() {
         })),
         total_cost: totalCost,
       };
-
+      const newSocket = io("http://localhost:8000");
       const response = await api.post("/orders", orderData);
       if ((response.status = 200 || 201)) {
         toast.success("Order placed successfully!");
         setSelectedItems([]);
         setTotalCost(0);
+        newSocket.emit("tableUpdated"); 
+        debugger
       }
     } catch (err) {
       console.error(err);

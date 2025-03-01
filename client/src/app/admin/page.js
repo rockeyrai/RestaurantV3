@@ -1,120 +1,124 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  UtensilsCrossed, 
+"use client";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { io } from "socket.io-client";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
   Pizza,
+  Settings,
   UserCircle,
-} from 'lucide-react';
-import Dashboard from '@/component/dashboard';
-import Orders from '@/component/orderSection';
-import Staff from '@/component/staffSection';
-import Tables from '@/component/tableSection';
-import Menu from '@/component/menuSection';
-import axios from 'axios';
-import { io } from 'socket.io-client';
-import { useSelector } from 'react-redux';
-import Router from 'next/router';
-import { useRouter } from 'next/navigation';
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
+import Dashboard from "@/component/dashboard";
+import Orders from "@/component/orderSection";
+import Tables from "@/component/tableSection";
+import Menu from "@/component/menubtn";
+import Staff from "@/component/staffSection";
+import CoustomeMenu from "@/component/menuSection";
+import ExtraSection from "@/component/extrasection";
 
-
-function Admin () {
-  const [activeTab, setActiveTab] = useState('dashboard');
+function Admin() {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tables, setTables] = useState([]);
   const [orders, setOrders] = useState([]);
   const user = useSelector((state) => state.auth.user);
-  const router = useRouter()
-
+  const router = useRouter();
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
-  useEffect(()=>{
-    const  checkUser = user || 0
-    if(checkUser===0){
-      router.push("/")
-    }else{
-      fetchMenu()
-      fetchOrder()
-      fetchTables()
-      
-  // Initialize Socket.IO and listen for real-time updates
-      const newSocket = io("http://localhost:8000"); // Replace with your server URL
+  useEffect(() => {
+    const checkUser = user || 0;
+    if (checkUser === 0) {
+      router.push("/");
+    } else {
+      fetchMenu();
+      fetchOrder();
+      fetchTables();
+
+      // Initialize Socket.IO and listen for real-time updates
+      const newSocket = io("http://localhost:8000");
 
       // Listen for 'tableUpdated' event
       newSocket.on("tableUpdated", () => {
+
         fetchTables(); // Fetch the latest tables when an update occurs
       });
-  
+
       // Fetch initial table data when the component mounts
       fetchTables();
-  
+
       return () => {
         newSocket.disconnect(); // Cleanup socket connection when component unmounts
       };
     }
-  },[])
-
-    const fetchMenu = async () => {
-      try {
-        const response = await api.get('/menu');
-        const formattedData = response.data.map(item => ({
-          id: item.menu_item_id,
-          name: item.name,
-          final_price: parseFloat(item.final_price),
-          original_price : parseFloat(item.original_price),
-          category: item.category_name,
-          available: Boolean(item.availability),
-          discount_percentage : parseFloat(item.discount_percentage),
-
-        }));
-        setMenuItems(formattedData);
-      } catch (err) {
-        setError("Failed to fetch menu items. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchOrder = async () => {
-      try {
-        const response = await api.get('/admin/orders');
-        const orderData =response.data.orders
-        setOrders(orderData);
-      } catch (err) {
-        setError("Failed to fetch orders. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  }, []);
+  useEffect(() => {
+    console.log(`this is food data ${menuItems}`); // This will log the updated state when menuItems changes
+  }, [menuItems]);
   
+  const fetchMenu = async () => {
+    try {
+      const response = await api.get("/menu"); 
+      const formattedData = response.data.map((item) => ({
+        id: item.menu_item_id,
+        name: item.name,
+        final_price: parseFloat(item.final_price),
+        original_price: parseFloat(item.original_price),
+        category: item.category_name,
+        available: Boolean(item.availability),
+        discount_percentage: parseFloat(item.discount_percentage),
+      }));
+      setMenuItems(formattedData);
+    } catch (err) {
+      setError("Failed to fetch menu items. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const fetchOrder = async () => {
+    try {
+      const response = await api.get("/admin/orders");
+      const orderData = response.data.orders;
+      setOrders(orderData);
+    } catch (err) {
+      setError("Failed to fetch orders. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchTables = async () => {
     try {
-      const response = await api.get('/admin/tables');
-      console.log(response.data);
+      const response = await api.get("/admin/tables");
       const data = response.data.map((table) => ({
         id: table.id,
         table_number: table.table_number,
         seats: table.seats,
         available: table.available,
-        reservation: table.customer_name ? { customerName: table.customer_name, time: table.reserve_time } : null,
-        reserve_date: table.reserve_date ? new Date(table.reserve_date).toLocaleString() : null, // Format the date
-        no_of_people: table.no_of_people || 0,  // Handle null/undefined no_of_people
+        reservation: table.customer_name
+          ? { customerName: table.customer_name, time: table.reserve_time }
+          : null,
+        reserve_date: table.reserve_date
+          ? new Date(table.reserve_date).toLocaleString()
+          : null, // Format the date
+        no_of_people: table.no_of_people || 0, // Handle null/undefined no_of_people
       }));
       setTables(data);
-      console.log(data); // Log the formatted data
     } catch (error) {
-      console.error('Error fetching tables:', error);
+      console.error("Error fetching tables:", error);
     }
   };
-    
 
   const [dailySales] = useState([
     { date: "2025-01-01", sale: 134 },
@@ -172,54 +176,63 @@ function Admin () {
     { date: "2025-02-22", sale: 189 },
     { date: "2025-02-23", sale: 215 },
   ]);
-  
-  
+
   const [staff, setStaff] = useState([]);
 
   useEffect(() => {
     const fetachemployee = async () => {
       try {
-        const response = await api.get('/employee');
-        const transformedData = response.data.map(employee => ({
+        const response = await api.get("/employee");
+        const transformedData = response.data.map((employee) => ({
           id: employee.id,
           name: employee.name,
           email: employee.email,
           phone_number: employee.phone_number,
           role: employee.role,
-          schedule: employee.schedule.map(schedule => ({
+          schedule: employee.schedule.map((schedule) => ({
             id: schedule.id,
             staff_id: schedule.staff_id,
-            shift_start: new Date(schedule.shift_start).toISOString().slice(0, 16).replace('T', ' '),
-            shift_end: new Date(schedule.shift_end).toISOString().slice(0, 16).replace('T', ' ')
-          }))
+            shift_start: new Date(schedule.shift_start)
+              .toISOString()
+              .slice(0, 16)
+              .replace("T", " "),
+            shift_end: new Date(schedule.shift_end)
+              .toISOString()
+              .slice(0, 16)
+              .replace("T", " "),
+          })),
         }));
-        console.log(`Transformed Employee Data: ${JSON.stringify(transformedData)}`);
         setStaff(transformedData);
       } catch (error) {
-        console.error('Error fetching employee data:', error);
+        console.error("Error fetching employee data:", error);
       }
     };
 
     fetachemployee();
   }, []);
 
-
   const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
+    setOrders(
+      orders.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
   };
 
   const toggleTableAvailability = (tableId) => {
-    setTables(tables.map(table =>
-      table.id === tableId ? { ...table, available: !table.available } : table
-    ));
+    setTables(
+      tables.map((table) =>
+        table.id === tableId ? { ...table, available: !table.available } : table
+      )
+    );
   };
 
   const toggleMenuItemAvailability = (itemId) => {
-    setMenuItems(menuItems.map(item =>
-      item.id === itemId ? { ...item, available: !item.available } : item
-    ));
+    setMenuItems(
+      menuItems.map((item) =>
+        item.id === itemId ? { ...item, available: !item.available } : item
+      )
+    );
   };
 
   const getTotalSales = () => {
@@ -227,15 +240,11 @@ function Admin () {
   };
 
   const getActiveOrders = () => {
-    return orders.filter((order) => order.status !== 'completed').length;
+    return orders.filter((order) => order.status !== "completed").length;
   };
-  
-  console.log(getActiveOrders());
-  
 
-  console.log(getActiveOrders)
   const getAvailableTables = () => {
-    return tables.filter(table => table.available).length ; 
+    return tables.filter((table) => table.available).length;
   };
 
   return (
@@ -245,55 +254,76 @@ function Admin () {
         <nav className="mt-6">
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
-              activeTab === 'dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              activeTab === "dashboard"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => setActiveTab("dashboard")}
           >
             <LayoutDashboard className="w-5 h-5" />
             <span>Dashboard</span>
           </div>
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
-              activeTab === 'orders' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              activeTab === "orders"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
-            onClick={() => setActiveTab('orders')}
+            onClick={() => setActiveTab("orders")}
           >
             <UtensilsCrossed className="w-5 h-5" />
             <span>Orders</span>
           </div>
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
-              activeTab === 'tables' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              activeTab === "tables"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
-            onClick={() => setActiveTab('tables')}
+            onClick={() => setActiveTab("tables")}
           >
             <Users className="w-5 h-5" />
             <span>Tables</span>
           </div>
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
-              activeTab === 'menu' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              activeTab === "menu"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
-            onClick={() => setActiveTab('menu')}
+            onClick={() => setActiveTab("menu")}
           >
             <Pizza className="w-5 h-5" />
             <span>Menu</span>
           </div>
           <div
             className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
-              activeTab === 'staff' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+              activeTab === "staff"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
-            onClick={() => setActiveTab('staff')}
+            onClick={() => setActiveTab("staff")}
           >
             <UserCircle className="w-5 h-5" />
             <span>Staff</span>
+          </div>
+          <div
+            className={`px-6 py-3 cursor-pointer flex items-center space-x-3 ${
+              activeTab === "extra"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+            onClick={() => setActiveTab("extra")}
+          >
+            <Settings className="w-5 h-5" />
+            <span>Extra</span>
           </div>
         </nav>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        {activeTab === 'dashboard' && (
+        {activeTab === "dashboard" && (
           <Dashboard
             dailySales={dailySales}
             getTotalSales={getTotalSales}
@@ -302,32 +332,27 @@ function Admin () {
             menuItemsCount={menuItems.length}
           />
         )}
-        {activeTab === 'orders' && (
-          <Orders
-            orders={orders}
-            updateOrderStatus={updateOrderStatus}
-          />
+        {activeTab === "orders" && (
+          <Orders orders={orders} updateOrderStatus={updateOrderStatus} />
         )}
-        {activeTab === 'tables' && (
+        {activeTab === "tables" && (
           <Tables
             tables={tables}
             toggleTableAvailability={toggleTableAvailability}
           />
         )}
-        {activeTab === 'menu' && (
-          <Menu
+        {activeTab === "menu" && (
+          <CoustomeMenu
             menuItems={menuItems}
             toggleMenuItemAvailability={toggleMenuItemAvailability}
           />
         )}
-        {activeTab === 'staff' && (
-          <Staff
-            staff={staff}
-          />
-        )}
+        {activeTab === "staff" && <Staff staff={staff} />}
+        {activeTab === "extra" && <ExtraSection />}
+        
       </div>
     </div>
   );
 }
 
-export default Admin
+export default Admin;
