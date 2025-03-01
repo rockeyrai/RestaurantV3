@@ -15,7 +15,6 @@ import {
 import Dashboard from "@/component/dashboard";
 import Orders from "@/component/orderSection";
 import Tables from "@/component/tableSection";
-import Menu from "@/component/menubtn";
 import Staff from "@/component/staffSection";
 import CoustomeMenu from "@/component/menuSection";
 import ExtraSection from "@/component/extrasection";
@@ -28,13 +27,14 @@ function Admin() {
   const [orders, setOrders] = useState([]);
   const user = useSelector((state) => state.auth.user);
   const router = useRouter();
+
   const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_FRONTEND_API,
     headers: {
       "Content-Type": "application/json",
     },
   });
-
+  debugger
   useEffect(() => {
     const checkUser = user || 0;
     if (checkUser === 0) {
@@ -49,7 +49,6 @@ function Admin() {
 
       // Listen for 'tableUpdated' event
       newSocket.on("tableUpdated", () => {
-
         fetchTables(); // Fetch the latest tables when an update occurs
       });
 

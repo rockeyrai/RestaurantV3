@@ -4,11 +4,11 @@ const { addOrder, getAllOrders, getCustomerOrders, updateOrder, deleteCompletedO
 const orderRouter = (io) => {
   const router = express.Router();
 
-  router.post("/orders", addOrder);
+  router.post("/orders", (req, res) => addOrder(req, res, io));
   router.get("/admin/orders", getAllOrders);
   router.get("/customer/orders/:user_id", getCustomerOrders);
   router.post("/update-status", (req, res) => updateOrder(req, res, io)); // Pass io to the controller
-  router.delete("/deleteorders", deleteCompletedOrders); // Route to delete completed orders
+  router.delete("/deleteorders",(req,res) => deleteCompletedOrders(req,res,io)); // Route to delete completed orders
 
   return router; // Return the router instance
 };

@@ -1,7 +1,7 @@
 const { mysqlPool } = require("../database/mysql");
 const Order = require("../model/order"); // Use the correct model name
 
-const addOrder = async (req, res) => {
+const addOrder = async (req, res, io) => {
   const { user_id, items, total_cost } = req.body;
 
   const [rows] = await mysqlPool.query('SELECT id FROM Tables WHERE user_id = ?', [user_id]);
@@ -77,7 +77,7 @@ const addOrder = async (req, res) => {
       table_id,
       items,
       total_cost: calculatedCost, // Use calculated cost here
-      status: 'in_progress', // Default status
+      status: 'pending', // Default status
     });
     const savedOrder = await newOrder.save();
 
@@ -88,7 +88,7 @@ const addOrder = async (req, res) => {
         [savedOrder._id.toString(), table_id] // Convert _id to string
       );
     }
-
+    io.emit("orderUpdated");
     res.status(201).json({ message: 'Order added successfully', order: savedOrder });
   } catch (error) {
     console.error('Error adding order:', error);
@@ -233,7 +233,7 @@ const updateOrder = async (req, res, io) => {
 };
 
 
-const deleteCompletedOrders = async (req, res) => {
+const deleteCompletedOrders = async (req, res, io) => {
   const { orderIds } = req.body; // Get order_ids from the request body
 
   if (!Array.isArray(orderIds) || orderIds.length === 0) {
@@ -249,6 +249,7 @@ const deleteCompletedOrders = async (req, res) => {
     } else {
       res.status(404).json({ success: false, message: "No matching orders found to delete" });
     }
+    io.emit("orderUpdated");
   } catch (error) {
     console.error("Error deleting orders:", error);
     res.status(500).json({ error: "Internal server error" });

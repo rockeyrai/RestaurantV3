@@ -259,6 +259,9 @@ const CoustomeMenu = ({ menuItems, toggleMenuItemAvailability }) => {
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap">
+                {console.log(`oringal price ${item.original_price}`)}
+                {console.log(`disdcount  price ${item.discount_percentage}`)}
+                {console.log(`final price ${item.final_price}`)}
                   {item.discount_percentage > 0 && (
                     <div className=" bg-red-400 text-white px-2 py-1 rounded-md">
                       {(item.original_price - item.discount_percentage).toFixed(

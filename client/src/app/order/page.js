@@ -121,8 +121,9 @@ const Order = () => {
       });
       setPayableamount("");
       if (socket) {
-        socket.emit("tableUpdated"); // Emit the updated table data
+        socket.emit("tableUpdated");
       }
+      debugger
       console.log(response.data.message);
       setOrders((prevOrders) =>
         prevOrders.filter((order) => !payId.includes(order.order_id))

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import axios from "axios";
+import { api } from "./clientProvider";
 
 const Orders = ({ orders }) => {
   const [socket, setSocket] = useState(null);
@@ -18,7 +19,6 @@ const Orders = ({ orders }) => {
 
     // Listen for real-time updates
     newSocket.on("orderStatusUpdated", (updatedOrder) => {
-      debugger
       setUpdatedOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.order_id === updatedOrder._id
@@ -26,7 +26,19 @@ const Orders = ({ orders }) => {
             : order
         )
       );
-    });
+    },
+    newSocket.on("orderUpdated", async () => {
+        try {
+
+          const response = await api.get("/admin/orders");
+          const orderData = response.data.orders;
+          setUpdatedOrders(orderData);
+        } catch (err) {
+          alert("Failed to fetch orders. Please try again later.");
+        }
+      }
+    )
+  );
 
     return () => {
       newSocket.disconnect(); // Cleanup socket connection on component unmount
@@ -48,6 +60,7 @@ const Orders = ({ orders }) => {
         console.log(updatedTable)
         if (socket) {
           socket.emit("tableUpdated", updatedTable); // Emit the updated table data
+          socket.emit("orderStatusUpdated",newStatus); // Emit the updated table data
         }
       }
       if (response.data.success) {
